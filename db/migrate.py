@@ -14,23 +14,18 @@ def run_migrations():
     """
     
     conn = mysql.connector.connect(
-    host=os.getenv("DB-HOST"),
-    port=os.getenv("DB-PORT"),
-    passoword=os.getenv("DB-PASSWORD"),
-    database=os.getenv("DB-NAME")
+        host=os.getenv("DB-HOST"),
+        port=os.getenv("DB-PORT"),
+        password=os.getenv("DB-PASSWORD"),
+        database=os.getenv("DB-NAME")
     )
 
     cursor = conn.cursor()
 
     migrations_dir = Path(__file__).parent/"migrations"
-    for sql_file in sorted(migrations_dir("*.sql")):
+    for sql_file in sorted(migrations_dir.glob("*.sql")):
         with open(sql_file) as f:
-            cursor.excute(f.read(), multi=True)
-
-    conn.commit()
-    cursor.close()
-    conn.close()
-
+            cursor.exucute(f.read(), multi=True)
 
 if __name__ == "__main__":
     run_migrations()
