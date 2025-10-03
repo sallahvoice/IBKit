@@ -2,7 +2,7 @@ from typing import Optional, Dict, Any, List
 from db.connection import db
 
 
-class repositories:
+class BaseRepository:
     """Abstract base with common CRUD operations"""
 
     def __init__(self, table_name: str):
