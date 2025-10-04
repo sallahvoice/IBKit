@@ -1,6 +1,6 @@
 from dataclasses import dataclass, asdict
 from decimal import Decimal, getcontext
-from typing import Optional
+from typing import Optional, Dict
 from enum import Enum
 from analysis.projections import ProjectionResult
 # Set decimal precision for financial calculations
@@ -59,7 +59,7 @@ class FinancialSnapshot:
         if not Decimal("0") <= self.marginal_tax_rate <= Decimal("1"):
             raise ValueError("marginal tax must be between 0 and 1")
     
-    @propery
+    @property
     def net_debt(self) -> Optional[Money]:
         if self.last_annual_cash is None:
             return None
@@ -149,6 +149,60 @@ class FinancialSnapshot:
 
     def to_dict(self) -> dict:
         return asdict(self)
+
+    @classmethod
+    def from_db_record(cls, record: Dict) -> "FinancialSnapshot":
+        """Convert database record to FinancialSnapshot"""
+        return cls(
+            marginal_tax_rate=Decimal(str(record["marginal_tax_rate"])),
+
+            last_annual_revenue=record["last_annual_revenue"],
+            last_annual_ebit=record["last_annual_ebit"],
+            last_annual_net_income=record["last_annual_net_income"],
+            last_annual_interest_expense=record["last_annual_interest_expense"],
+            last_annual_tax_paid=record["last_annual_tax_paid"],
+            trailing_sales=record["trailing_sales"],
+            trailing_ebit=record["trailing_ebit"],
+
+            last_annual_debt=record["last_annual_debt"],
+            last_annual_cash=record["last_annual_cash"],
+            last_annual_equity=record["last_annual_equity"],
+
+            last_annual_capex=record["last_annual_capex"],
+            last_annual_chng_wc=record["last_annual_chng_wc"],
+            last_annual_da=record["last_annual_da"],
+
+            market_cap=record["market_cap"],
+            current_shares_outstanding=record["current_shares_outstanding"],
+            current_beta=record["current_beta"]
+        )
+
+
+    def to_db_dict(self) -> Dict:
+        """Convert to database-ready dict"""
+        return {
+        "marginal_tax_rate" : self.marginal_tax_rate ,
+
+        "last_annual_revenue" : self.last_annual_revenue,
+        "last_annual_ebit" : self.last_annual_ebit ,
+        "last_annual_net_income" : self.last_annual_net_income ,
+        "last_annual_interest_expense" : self.last_annual_interest_expense ,
+        "last_annual_tax_paid" : self.last_annual_tax_paid ,
+        "trailing_sales" : self.trailing_sales ,
+        "trailing_ebit" : self.trailing_ebit ,
+
+        "last_annual_debt" : self.last_annual_debt ,
+        "last_annual_cash" : self.last_annual_cash ,
+        "last_annual_equity" : self.last_annual_equity ,
+
+        "last_annual_capex" : self.last_annual_capex ,
+        "last_annual_chng_wc" : self.last_annual_chng_wc ,
+        "last_annual_da" : self.last_annual_da ,
+
+        "market_cap" : self.market_cap ,
+        "current_shares_outstanding" : self.current_shares_outstanding ,
+        "current_beta ": self.current_beta        
+        }
 
 
 @dataclass(frozen=True, slots=True)

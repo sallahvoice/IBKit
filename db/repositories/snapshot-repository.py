@@ -7,7 +7,7 @@ from db.connection import db
 class SnapshotRepository(BaseRepository):
 
     def __init__(self):
-        super.__init__("financial_snapshots")
+        super().__init__("financial_snapshots")
 
     def create_snapshot(self, snapshot_data: Dict) -> int:
         """Insert financial snapshot"""
@@ -15,53 +15,53 @@ class SnapshotRepository(BaseRepository):
         INSERT INTO financial_snapshots (company_id,
         snapshot_date,
         marginal_tax_rate,
-        last_annual_revenue
-        last_annual_ebit
-        last_annual_net_income
-        last_annual_interest_expense
-        last_annual_tax_paid
-        trailing_sales
-        trailing_ebit
+        last_annual_revenue,
+        last_annual_ebit,
+        last_annual_net_income,
+        last_annual_interest_expense,
+        last_annual_tax_paid,
+        trailing_sales,
+        trailing_ebit,
 
-        last_annual_debt
-        last_annual_cash
-        last_annual_equity
+        last_annual_debt,
+        last_annual_cash,
+        last_annual_equity,
 
-        last_annual_capex
-        last_annual_chng_wc
-        last_annual_da
+        last_annual_capex,
+        last_annual_chng_wc,
+        last_annual_da,
 
         
-        market_cap
-        current_shares_outstanding
+        market_cap,
+        current_shares_outstanding,
         current_beta
 
         ...) 
 
-        VALUES (%{company_id}s,
-        %{snapshot_date}s,
+        VALUES %(company_id)s,
+        %(snapshot_date)s,
 
-        %{marginal_tax_rate}s,
+        %(marginal_tax_rate)s,
 
-        %{last_annual_revenue}s,
-        %{last_annual_ebit}s,
-        %{last_annual_net_income}s,
-        %{last_annual_interest_expense}s,
-        %{last_annual_tax_paid}s,
-        %{trailing_sales}s,
-        %{trailing_ebit}s,
+        %(last_annual_revenue)s,
+        %(last_annual_ebit)s,
+        %(last_annual_net_income)s,
+        %(last_annual_interest_expense)s,
+        %(last_annual_tax_paid)s,
+        %(trailing_sales)s,
+        %(trailing_ebit)s,
 
-        %{last_annual_debt}s,
-        %{last_annual_cash}s,
-        %{last_annual_equity}s,
+        %(last_annual_debt)s,
+        %(last_annual_cash)s,
+        %(last_annual_equity)s,
 
-        %{last_annual_capex}s,
-        %{last_annual_chng_wc}s,
-        %{last_annual_da}s,
+        %(last_annual_capex)s,
+        %(last_annual_chng_wc)s,
+        %(last_annual_da)s,
 
-        %{market_cap}s,
-        %{current_shares_outstanding}s,
-        %{current_beta}s,
+        %(market_cap)s,
+        %(current_shares_outstanding)s,
+        %(current_beta)s,
         ) 
 
         ON DUPLICATE KEY UPDATE
@@ -87,7 +87,7 @@ class SnapshotRepository(BaseRepository):
         """
 
         with db.get_cursor() as cursor:
-            cursor.excute(query, (snapshot_data))
+            cursor.execute(query, (snapshot_data))
             return cursor.lastrowid
 
 
@@ -101,7 +101,7 @@ class SnapshotRepository(BaseRepository):
         """
 
         with db.get_cursor() as cursor:
-            cursor.excute(query, (company_id))
+            cursor.execute(query, (company_id))
             return cursor.fetchone()
  
 
@@ -114,5 +114,5 @@ class SnapshotRepository(BaseRepository):
         """
 
         with db.get_cursor() as cursor:
-            cursor.excute(query, (company_id, snapshot_date))
+            cursor.execute(query, (company_id, snapshot_date))
             return cursor.fetchone()
