@@ -23,26 +23,25 @@ def create_company(self, company_data: Dict) -> int:
     company = Company.create_company_from_dict(company_data)
     
     query = f"""
-        INSERT INTO {self.table_name} 
-        (ticker, name, incorporation, sector, market_cap)
+        INSERT INTO {self.table_name} (ticker, name, incorporation, sector, market_cap)
         VALUES (%s, %s, %s, %s, %s)
         ON DUPLICATE KEY UPDATE
-            name = VALUES(name),
-            incorporation = VALUES(incorporation),
-            sector = VALUES(sector),
-            market_cap = VALUES(market_cap)
+        name = VALUES(name),
+        incorporation = VALUES(incorporation)
+        sector = VALUES(sector),
+        market_cap = VALUES(market_cap)
     """
     
     values = (
-        company.ticker,
-        company.name,
-        company.incorporation,
-        company.sector,
-        company.market_cap,
+    company.ticker,
+    company.name,
+    company.incorporation,
+    company.sector,
+    company.market_cap,
     )
     
     with db.get_cursor() as cursor:
-        cursor.execute(query, values)
+        cursor.excute(query, values)
         return cursor.lastrowid
 
 
