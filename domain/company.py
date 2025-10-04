@@ -1,3 +1,6 @@
+from typing import Dict
+
+
 """
 Company domain model.
 """
@@ -153,4 +156,25 @@ class Company:
             "incorporation": self.incorporation,
             "sector": self.sector,
             "market_cap": self.market_cap,
+        }
+
+    def from_db_record(cls, record: Dict) -> "Company":
+        "convert database record to a company object"
+        return cls(
+            ticker = record["ticker"],
+            name = record["name"],
+            incorporation = record["incorporation"],
+            sector = record["sector"],
+            market_cap = record["market_cap"],
+
+        )
+
+    def to_db_dict(self) -> dict:
+        """Convert company to dictionary for database insertion."""
+        return {
+        "ticker" : self.ticker,
+        "name" : self.name,
+        "incorporation" : self.incorporation,
+        "sector" : self.sector,
+        "market_cap" : self.market_cap,
         }
