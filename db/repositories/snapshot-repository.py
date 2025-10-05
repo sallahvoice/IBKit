@@ -1,9 +1,11 @@
+from dataclasses import dataclass
 from typing import Optional, Dict, List
 from datetime import date
 from db.repositories.base_repository import BaseRepository
 from db.connection import db
 
 
+@dataclass(frozen=True, slots=True)
 class SnapshotRepository(BaseRepository):
 
     def __init__(self):
