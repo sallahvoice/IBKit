@@ -158,6 +158,7 @@ class Company:
             "market_cap": self.market_cap,
         }
 
+    @classmethod
     def from_db_record(cls, record: Dict) -> "Company":
         "convert database record to a company object"
         return cls(

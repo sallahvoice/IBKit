@@ -1,5 +1,5 @@
 from dataclasses import dataclass, fields, asdict
-from typing import Tuple, List, Optional, Any
+from typing import Tuple, List, Optional, Any, Dict
 from statistics import mean, median
 
 Money = int
@@ -16,7 +16,7 @@ class ComparableCompany:
     forward_price_to_book: Multiple
     forward_pe: Multiple
     trailing_pe: Multiple
-    forward_price_to_sale: Multiple
+    forward_price_to_sales: Multiple
     trailing_ev_to_ebit: Multiple
     trailing_ev_to_sales: Multiple
 
@@ -37,6 +37,37 @@ class ComparableCompany:
         Returns a dictionary representation of the company.
         """
         return asdict(self)
+    
+    @classmethod
+    def from_db_record(cls, record: Dict) -> "ComparableCompany":
+        """"Convert  db records to ComparableCompany"""
+
+        return cls (
+        ticker = record["ticker"],
+        name = record["name"],
+        forward_price_to_book = record["forward_price_to_book"],
+        forward_pe = record["forward_pe"],
+        trailing_pe = record["trailing_pe"],
+        forward_price_to_sales = record["forward_price_to_sales"],
+        trailing_ev_to_ebit = record["trailing_ev_to_ebit"],
+        trailing_ev_to_sales = record["trailing_ev_to_sales"]
+        )
+
+    def to_db_dict(self) -> Dict:
+        """Convert to database-ready dict"""
+
+        return {
+        "ticker" : self.ticker,
+        "name" : self.name,
+        "forward_price_to_book" : self.forward_price_to_book,
+        "forward_pe" : self.forward_pe,
+        "trailing_pe" : self.trailing_pe,
+        "forward_price_to_sales" : self.forward_price_to_sales,
+        "trailing_ev_to_ebit" : self.trailing_ev_to_ebit,
+        "trailing_ev_to_sales" : self.trailing_ev_to_sales
+        }
+
+        
 
 @dataclass
 class ComparableSet:
@@ -104,6 +135,7 @@ class ComparableSet:
         return [c.as_dict() for c in self.companies]
 
     def summary(self, attr: str, lower: Multiple = 0, upper: Multiple = 60) -> dict:
+
         """
         Returns summary statistics for a given attribute.
         """
@@ -114,3 +146,11 @@ class ComparableSet:
             "mean": mean(values) if values else None,
             "median": median(values) if values else None
         }
+    
+    def to_db_dict(self) -> Dict:
+        """Convert to db-ready dict"""
+        pass
+        
+    def from_db_record(cls) -> "ComparableSet":
+        """Converts db record to ComparableSet"""
+        pass
