@@ -147,10 +147,12 @@ class ComparableSet:
             "median": median(values) if values else None
         }
     
-    def to_db_dict(self) -> Dict:
-        """Convert to db-ready dict"""
-        pass
-        
-    def from_db_record(cls) -> "ComparableSet":
-        """Converts db record to ComparableSet"""
-        pass
+    @classmethod
+    def from_db_records(cls, records: List[Dict]) -> "ComparableSet":
+        """Convert list of DB records to ComparableSet"""
+        companies = [ComparableCompany.from_db_record(r) for r in records]
+        return cls(companies=companies)
+
+    def to_db_dict_list(self) -> List[Dict]:
+        """Convert to list of DB-ready dicts"""
+        return [c.to_db_dict() for c in self.comapnies]
