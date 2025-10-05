@@ -5,7 +5,6 @@ from db.repositories.base_repository import BaseRepository
 from db.connection import db
 
 
-@dataclass(frozen=True, slots=True)
 class SnapshotRepository(BaseRepository):
 
     def __init__(self):
@@ -13,8 +12,8 @@ class SnapshotRepository(BaseRepository):
 
     def create_snapshot(self, snapshot_data: Dict) -> int:
         """Insert financial snapshot"""
-        query = """
-        INSERT INTO financial_snapshots (company_id,
+        query = f"""
+        INSERT INTO {self.table_name} (company_id,
         snapshot_date,
         marginal_tax_rate,
         last_annual_revenue,
@@ -38,7 +37,7 @@ class SnapshotRepository(BaseRepository):
         current_shares_outstanding,
         current_beta
 
-        ...) 
+        ) 
 
         VALUES %(company_id)s,
         %(snapshot_date)s,
