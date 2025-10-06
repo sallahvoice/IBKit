@@ -155,4 +155,4 @@ class ComparableSet:
 
     def to_db_dict_list(self) -> List[Dict]:
         """Convert to list of DB-ready dicts"""
-        return [c.to_db_dict() for c in self.comapnies]
+        return [c.to_db_dict() for c in self.companies]
