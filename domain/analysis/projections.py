@@ -237,7 +237,7 @@ class EquityMultiplesEngine:
             * stable_growth_time_payout
         ) / (stable_stage_discount_minus_growth * compound_second_stage_growth)
 
-  @staticmethod
+    @staticmethod
     def forward_pe(params: CompanyInputsHolder, info: TwoStageGrowthParams) -> Multiple:
         _value_of_equity = EquityMultiplesEngine.value_of_equity(params, info)
         return params.expected_next_year_net_income_per_share / _value_of_equity
@@ -310,8 +310,9 @@ class FirmMultiplesEngine:
 
     @staticmethod
     def forward_ev_over_sales(params: CompanyInputsHolder) -> Multiple:
+        #used params.expected_next...after_tax_ebit instead of just expected_next...
         _enterprise_value = FirmMultiplesEngine.enterprise_value(params)
-        _expected_revenues_next_year = expected_next_year_after_tax_ebit_per_share/params.growth_stage_after_tax_ebit
+        _expected_revenues_next_year = params.expected_next_year_after_tax_ebit_per_share/params.growth_stage_after_tax_ebit
         return _enterprise_value / _expected_revenues_next_year
 
     @staticmethod
