@@ -1,0 +1,15 @@
+CREATE TABLE IF NOT EXISTS companies(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255)  DEFAULT NULL,
+    ticker VARCHAR(10) UNIQUE NOT NULL,
+    incorporation VARCHAR(255) DEFAULT NULL,
+    sector VARCHAR(255) DEFAULT NULL,
+    market_cap BIGINT DEFAULT NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)
+
+ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE INDEX idx_sector ON companies(sector);
+CREATE INDEX idx_market_cap ON companies(market_cap);
