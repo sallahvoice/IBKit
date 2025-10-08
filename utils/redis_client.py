@@ -3,12 +3,13 @@ import redis
 from dotenv import load_dotenv
 from logger import logger
 from fastapi import FastAPI, Request
+from utils.decorators import retry
 
 load_dotenv()
 app = FastAPI()
 
 @retry
-def set_connection()
+def set_connection():
     try:
         redis_client = redis.Redis(
             host=os.getenv("REDIS_HOST", "localhost"),

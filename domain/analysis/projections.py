@@ -1,8 +1,8 @@
-from dataclasses import dataclass
-from typing import Union
+from dataclasses import dataclass, replace
+from typing import Union, List
 from company import Company
 from financials.models import FinancialSnapshot, StageParams, TwoStageGrowthParams
-
+from utils.converge import project_revenue, project_other_line_items, converge_growth
 Percent = float
 Money = Union[float, int]
 Multiple = float

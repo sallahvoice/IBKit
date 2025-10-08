@@ -13,12 +13,13 @@ class ComparableCompany:
     """
     ticker: str
     name: str
-    forward_price_to_book: Multiple
     forward_pe: Multiple
-    trailing_pe: Multiple
+    forward_price_to_book: Multiple
     forward_price_to_sales: Multiple
+    trailing_pe: Multiple
     trailing_ev_to_ebit: Multiple
     trailing_ev_to_sales: Multiple
+    #choose to exclude forward ev/ebit & ev/sales for now
 
     def multiples_tuple(self) -> Tuple[Multiple, ...]:
         """

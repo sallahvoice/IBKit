@@ -102,7 +102,7 @@ class SnapshotRepository(BaseRepository):
         """
 
         with db.get_cursor() as cursor:
-            cursor.execute(query, (company_id))
+            cursor.execute(query, (company_id,))
             return cursor.fetchone()
  
 
