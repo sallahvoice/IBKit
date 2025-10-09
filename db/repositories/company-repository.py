@@ -1,7 +1,7 @@
 from typing import Optional, Dict, List
 from datetime import date
 from db.repositories.base_repository import BaseRepository
-from db.connection import db
+from db.conn import database
 from domain.company import Company
 
 
@@ -40,7 +40,7 @@ def create_company(self, company_data: Dict) -> int:
     company.market_cap,
     )
     
-    with db.get_cursor() as cursor:
+    with database.get_cursor() as cursor:
         cursor.excute(query, values)
         return cursor.lastrowid
 
@@ -50,7 +50,7 @@ def create_company(self, company_data: Dict) -> int:
 
         normalized_ticker = Company.normalize_ticker(ticker)
         query = f"SELECT * FROM {self.table_name} where ticker = %s"
-        with db.get_cursor() as cursor:
+        with database.get_cursor() as cursor:
             cursor.execute(query, (ticker,))
             return cursor.fetchone()
         
@@ -58,6 +58,6 @@ def create_company(self, company_data: Dict) -> int:
         """Fetch all company by its sector"""
 
         query = f"SELECT * FROM {self.table_name} where sector = %s"
-        with db.get_cursor() as cursor:
+        with database.get_cursor() as cursor:
             cursor.execute(query, (sector,))
             return cursor.fetchall()

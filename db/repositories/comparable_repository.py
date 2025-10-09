@@ -1,7 +1,7 @@
 from typing import Optional, Dict, List
 from datetime import date
 from db.repositories.base_repository import BaseRepository
-from db.connection import db
+from db.conn import database
 
 
 class MultiplesRepository(BaseRepository):
@@ -35,7 +35,7 @@ class MultiplesRepository(BaseRepository):
             )
         """
         
-        with db.get_cursor() as cursor:
+        with database.get_cursor() as cursor:
             cursor.execute(query, comp_data)
             return cursor.lastrowid
 
@@ -46,7 +46,7 @@ class MultiplesRepository(BaseRepository):
             JOIN comparable_set_members s ON c.ticker = s.company_ticker
             WHERE s.set_id = %s
         """
-        with db.get_cursor() as cursor:
+        with database.get_cursor() as cursor:
             cursor.execute(query, (set_id,))
             return cursor.fetchall()
 
@@ -56,6 +56,6 @@ class MultiplesRepository(BaseRepository):
             SELECT * FROM {self.table_name}
             WHERE ticker = %s
         """
-        with db.get_cursor() as cursor:
+        with database.get_cursor() as cursor:
             cursor.execute(query, (ticker,))
             return cursor.fetchone()

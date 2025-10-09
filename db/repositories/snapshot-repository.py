@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Optional, Dict, List
 from datetime import date
 from db.repositories.base_repository import BaseRepository
-from db.connection import db
+from db.conn import database
 
 
 class SnapshotRepository(BaseRepository):
@@ -87,7 +87,7 @@ class SnapshotRepository(BaseRepository):
         current_beta = VALUES(current_beta),
         """
 
-        with db.get_cursor() as cursor:
+        with database.get_cursor() as cursor:
             cursor.execute(query, (snapshot_data))
             return cursor.lastrowid
 
@@ -101,7 +101,7 @@ class SnapshotRepository(BaseRepository):
         LIMIT 1
         """
 
-        with db.get_cursor() as cursor:
+        with database.get_cursor() as cursor:
             cursor.execute(query, (company_id,))
             return cursor.fetchone()
  
@@ -114,6 +114,6 @@ class SnapshotRepository(BaseRepository):
         WHERE company_id = %s AND snapshot_date = %s
         """
 
-        with db.get_cursor() as cursor:
+        with database.get_cursor() as cursor:
             cursor.execute(query, (company_id, snapshot_date))
             return cursor.fetchone()
