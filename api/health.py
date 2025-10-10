@@ -14,7 +14,7 @@ sample = {"ticker": "AAPL",
 app.get("/health/")
 def health(test):
     try:
-        database().create_company(sample)
+        database.create_company(sample)
         redis_status = redis.ping()
         return {"status": "success", "redis": redis_status}
     except Exception as e:
