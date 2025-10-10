@@ -6,5 +6,5 @@ from typing import Dict
 router = APIRouter(prefix="/comparable")
 
 router.get("/")
-async def read_snapshot(snapshot_data: Dict):
-    await create_snapshot(snapshot_data)
+def read_snapshot(snapshot_data: Dict):
+    create_snapshot(snapshot_data)

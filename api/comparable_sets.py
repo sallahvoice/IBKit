@@ -6,5 +6,5 @@ from typing import Dict
 router = APIRouter(prefix="/comparable")
 
 router.get("/")
-async def read_comparable(comp_data: Dict):
-    await create_comparable(comp_data)
+def read_comparable(comp_data: Dict):
+    create_comparable(comp_data)

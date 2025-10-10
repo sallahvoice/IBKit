@@ -12,10 +12,10 @@ sample = {"ticker": "AAPL",
 
 
 app.get("/health/")
-async def health(test):
+def health(test):
     try:
-        await database().create_company(sample)
-        redis_status = await redis.ping()
+        database().create_company(sample)
+        redis_status = redis.ping()
         return {"status": "success", "redis": redis_status}
     except Exception as e:
         return {"status": "error", "details": str(e)}.fetchall()
