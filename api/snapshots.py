@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
 from db.repositories.snpashot_repository import SnapshotRepository
-from typing import Dict
 from pydantic import BaseModel
 
 snapshot_repo = SnapshotRepository()

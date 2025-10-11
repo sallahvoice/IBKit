@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, Dict, List
+from typing import Optional, Dict
 from datetime import date
 from db.repositories.base_repository import BaseRepository
 from db.conn import database
