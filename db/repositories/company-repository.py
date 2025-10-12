@@ -9,7 +9,7 @@ class CompanyRepository(BaseRepository):
     """Repository for managing company records in the database"""
 
     def __init__(self):
-        super().__init__("company")
+        super().__init__("companies")
     
     def create_company(self, company_data: Dict) -> int:
         """Create or update a company record in the database"""
@@ -47,21 +47,21 @@ class CompanyRepository(BaseRepository):
     def get_company_by_ticker(self, ticker: str) -> Optional[Dict]:
         """Fetch a company record by its ticker symbol"""
         normalized_ticker = Company.normalize_ticker(ticker)
-        query = f"SELECT * FROM {self.table_name} WHERE ticker = %s"
+        query = "SELECT * FROM companies WHERE ticker = %s"
         with database.get_cursor() as cursor:
             cursor.execute(query, (normalized_ticker,))  
             return cursor.fetchone()
         
     def get_company_by_sector(self, sector: str) -> List[Dict]:
         """Fetch all companies by sector"""
-        query = f"SELECT * FROM {self.table_name} WHERE sector = %s"
+        query = "SELECT * FROM companies WHERE sector = %s"
         with database.get_cursor() as cursor:
             cursor.execute(query, (sector,))
             return cursor.fetchall()
     
     def get_company_by_id(self, company_id: int) -> Optional[Dict]:
         """Fetch a company record by its ID"""
-        query = f"SELECT * FROM {self.table_name} WHERE id = %s"
+        query = "SELECT * FROM companies WHERE id = %s"
         with database.get_cursor() as cursor:
             cursor.execute(query, (company_id,))
             return cursor.fetchone()

@@ -1,12 +1,11 @@
-from mysql.connector import pooling, MySQLConnectionPool #wrong import ?
+from mysql.connector import pooling
 from .conn import DatabaseConnection
 from dotenv import load_dotenv
 import os
 
-
 load_dotenv()
 
-db_pool = pooling.MySQLConnectionPool( pool_name="main_pool",
+db_pool = pooling.MySQLConnectionPool(pool_name="main_pool",
     pool_size=5,
     host=os.getenv("DB_HOST", "localhost"),
     port=int(os.getenv("DB_PORT", 3306)),

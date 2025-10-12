@@ -41,8 +41,8 @@ class MultiplesRepository(BaseRepository):
 
     def get_comparables_for_set(self, set_id: int) -> List[Dict]:
         """Get all comparable companies for a set"""
-        query = f"""
-            SELECT c.* FROM {self.table_name} c
+        query = """
+            SELECT c.* FROM comparable_companies c
             JOIN comparable_set_members s ON c.ticker = s.company_ticker
             WHERE s.set_id = %s
         """
@@ -52,8 +52,8 @@ class MultiplesRepository(BaseRepository):
 
     def get_comparable_by_ticker(self, ticker: str) -> Optional[Dict]:
         """Get comparable company by ticker"""
-        query = f"""
-            SELECT * FROM {self.table_name}
+        query = """
+            SELECT * FROM comparable_companies
             WHERE ticker = %s
         """
         with database.get_cursor() as cursor:
