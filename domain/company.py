@@ -131,20 +131,20 @@ class Company:
         """
         return cls(ticker=provided_ticker)
 
-    @staticmethod
-    def normalize_ticker(ticker) -> str:
+    
+    def normalize_ticker(self) -> str:
         """
         Normalize ticker by stripping whitespace, uppercasing, and removing spaces.
         """
-        return ticker.strip().upper().replace(" ", "")
+        return self.ticker.strip().upper().replace(" ", "")
 
-    @staticmethod
-    def is_valid_ticker(ticker) -> bool:
+    
+    def is_valid_ticker(self) -> bool:
         """
         Validate ticker: must be 2-4 alphabetic characters after normalization.
         """
         normalized_ticker = Company.normalize_ticker(
-            ticker
+        self
         )  # Call static method from class
         return 1 < len(normalized_ticker) < 5 and normalized_ticker.isalpha()
 
@@ -171,6 +171,7 @@ class Company:
         )
 
     def to_db_dict(self) -> dict:
+
         """Convert company to dictionary for database insertion."""
         return {
         "ticker" : self.ticker,
@@ -179,3 +180,8 @@ class Company:
         "sector" : self.sector,
         "market_cap" : self.market_cap,
         }
+    
+
+if __name__ == "__main__":
+    apple = Company("appl", "apple-electronics", "1991", "technolegy", 3813300644)
+    print(apple.is_valid_ticker())
