@@ -72,6 +72,7 @@ class ComparableCompany:
 
 @dataclass
 class ComparableSet:
+
     """
     Represents a set of comparable companies for analysis.
     """
@@ -155,5 +156,6 @@ class ComparableSet:
         return cls(companies=companies)
 
     def to_db_dict_list(self) -> List[Dict]:
+
         """Convert to list of DB-ready dicts"""
         return [c.to_db_dict() for c in self.companies]
