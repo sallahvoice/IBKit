@@ -1,3 +1,10 @@
-.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+.venv/
+
 .functions_cache
-virtual
+
+*.log
