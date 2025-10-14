@@ -80,9 +80,10 @@ class ComparableSet:
 
     def add(self, company: ComparableCompany) -> None:
         """
-        Adds a company to the set.
+        Adds a company to the set only if its ticker does not already exist.
         """
-        self.companies.append(company)
+        if not any(c.ticker == company.ticker for c in self.companies):
+            self.companies.append(company)
 
     def remove(self, ticker: str) -> None:
         """
@@ -156,6 +157,5 @@ class ComparableSet:
         return cls(companies=companies)
 
     def to_db_dict_list(self) -> List[Dict]:
-
         """Convert to list of DB-ready dicts"""
-        return [c.to_db_dict() for c in self.companies]
+        return [c.to_db_dict() for c in self.companies]  
