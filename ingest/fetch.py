@@ -235,7 +235,7 @@ def fetch_financial_data(tickers: List[str]) -> List[pd.DataFrame]:
                 except (
                     requests.RequestException,
                     ValueError,
-                ) as e:  # Specific exceptions
+                ) as e:
                     if logger:
                         logger.error(f"Error fetching {ticker} {statement}: {e}")
                     continue
@@ -264,7 +264,7 @@ def fetch_financial_data(tickers: List[str]) -> List[pd.DataFrame]:
                     if should_notify:
                         notify_cache_expiry(cache_key)
 
-                except ConnectionError as e:  # Specific exceptions
+                except ConnectionError as e:
                     if logger:
                         logger.warning(f"Cache write failed for {cache_key}: {e}")
 
@@ -272,6 +272,15 @@ def fetch_financial_data(tickers: List[str]) -> List[pd.DataFrame]:
         logger.info(f"Fetched {len(dfs)} datasets")
     return dfs
 
+def fetch_companies_fields(tickers: List[str]) -> List[dict]:
+    """
+    fetches certain company data (sector, mc..) needed for the Company class
+    """
+    companies_fields = []
+    for ticker in tickers:
+        company_field = yf.get(ticker,) #yet to be implemented
+        companies_fields.append(company_field)
+        
 
 def transpose_dataframes(dfs: List[pd.DataFrame]) -> List[pd.DataFrame]:
     """Transpose DataFrames for better readability"""
