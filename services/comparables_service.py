@@ -1,10 +1,11 @@
 from typing import Optional, Dict, List
-from ingest.fetch import target_company_filters, screener, fetch_financial_data
+from ingest.fetch import (target_company_filters, screener,
+                          fetch_financial_data, fetch_companies_fields)
 from domain.company import Company
 from domain.comparables import ComparableCompany, ComparableSet
 from domain.financials.models import FinancialSnapshot, TwoStageGrowthParams
 from domain.analysis.projections import (CompanyInputsHolder,ProjectionResult,
-EquityMultiplesEngine, FirmMultiplesEngine)
+                                         EquityMultiplesEngine, FirmMultiplesEngine)
 from db.repositories.comparable_repository import ComparableRepository
 
 
@@ -46,5 +47,5 @@ def analyze_company(ticker: str) -> Dict:
     if not companies:
         return {"error": "failed to create company objects"}
 
-    
+
     #ComparableCompany & ComparableSet are the last classes you interact with
