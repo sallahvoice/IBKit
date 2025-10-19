@@ -1,0 +1,1 @@
+create a folder for classes fields (files in IBKit/ingest) or a subfolder

@@ -19,7 +19,7 @@ try:
     from utils.decorators import retry
     from utils.logger import logger
     from utils.redis_client import redis_client
-    from utils.webhooks import notify_cache_expiry
+    from webhook import notify_cache_expiry
 except ImportError:
     # Fallbacks for development/testing
     ComparableSet, redis_client, logger = None, None, None
@@ -163,7 +163,7 @@ def screener(
 
 
 @retry
-def fetch_financial_data(tickers: List[str]) -> List[pd.DataFrame]:
+def create_financial_data(tickers: List[str]) -> List[pd.DataFrame]: #target company+screener tickers
     """Fetch financial data with ticker-level caching and smart comparison"""
     if not api_key:
         return []
@@ -271,89 +271,6 @@ def fetch_financial_data(tickers: List[str]) -> List[pd.DataFrame]:
     if dfs and logger:
         logger.info(f"Fetched {len(dfs)} datasets")
     return dfs
-
-def fetch_companies_fields(tickers: List[str]) -> List[dict]:
-    """
-    fetches certain company data (sector, mc..) needed for the Company class
-    """
-    companies_fields = []
-    for ticker in tickers:
-        info = ticker.info
-        if not info:
-            return {"error": "could not get ticker.info for companies tickers"}
-        company_field = {
-            "ticker": ticker,
-            "name": info.get("longName"),
-            "incorporation": info.get("incorporation"), #returns None (not provided via yf api)
-            "sector": info.get("sector"),
-            "market_cap": info.get("marketcap")
-        }
-        companies_fields.append(company_field)
-
-
-def fetch_companies_snapshot_fields(dfs: List[pd.DataFrame]): #needs revision
-    snapshots = {}
-
-    for df in dfs:
-        ticker = df["ticker"].iloc[0]
-        stmt_type = df["statement_type"].iloc[0]
-
-        yf_ticker = yf.Ticker(ticker)
-        info = ticker.info
-
-        if ticker not in snapshots:
-            snapshots[ticker] = {}
-
-        latest = df.iloc[0]
-
-        snapshots[ticker]["marginal_tax_rate"] = 0.21 #make it dynamic if possible
-
-        if stmt_type == "income_statement":
-            snapshots[ticker]["last_annual_revenue"] = latest.get("revenue")
-            snapshots[ticker]["last_annual_ebit"] = latest.get("ebit")
-            snapshots[ticker]["last_annual_net_income"] = latest.get("netIncome")
-            snapshots[ticker]["last_annual_interest_expense"] = latest.get("interestExpense")
-            snapshots[ticker]["last_annual_tax_paid"] = latest.get("incomeTaxExpense")
-
-
-            #for target company only 
-            snapshots[ticker]["trailing_sales"] = None
-            snapshots[ticker]["trailing_ebit"] = None
-            yf_ticker = yf.Ticker(ticker)
-            #check if this method is actually available + are those fields valid
-            try:
-                quartrly_inc = yf_ticker.financials
-                if "Total Revenue" in quartrly_inc.index:
-                    snapshots[ticker]["trailing_sales"] = quartrly_inc.loc["total Revenue"].iloc[:4].sum()
-
-                    for key in ["Operating Income", "Ebit", "EBIT"]:
-                        if key in quartrly_inc.index:
-                            snapshots[ticker]["trailing_ebit"] = quartrly_inc.loc[key].iloc[:4].sum()
-                            break
-            except Exception:
-                pass
-            
-            if (snapshots[ticker]["trailing_sales"] or snapshots[ticker]["trailing_ebit"]) == None:
-                snapshots[ticker]["trailing_sales"] = latest.get("revenue")
-                snapshots[ticker]["trailing_ebit"] = latest.get("ebit")
-
-
-        elif stmt_type == "balance-sheet-statement":
-            snapshots[ticker]["last_annual_debt"] = latest.get("totalDebt")
-            
-            snapshots[ticker]["last_annual_cash"] = latest.get("cashAndShortTermInvestments") #needed for target company only
-            snapshots[ticker]["last_annual_equity"] = latest.get("totalEquity")
-
-
-        elif stmt_type == "cash-flow-statement":
-            snapshots[ticker]["last_annual_capex"] = latest.get("capitalExpenditure") #negative
-            snapshots[ticker]["last_annual_chng_wc"] = latest.get("changeInWorkingCapital")
-            snapshots[ticker]["last_annual_da"] = latest.get("depreciationAndAmortization")
-
-        else:
-            snapshots[ticker]["market_cap"] = info.get("marketCap")
-            snapshots[ticker]["current_shares_outstanding"] = info.get("sharesOutstanding")
-            snapshots[ticker]["current_beta"] = info.get("beta")
 
 
 def transpose_dataframes(dfs: List[pd.DataFrame]) -> List[pd.DataFrame]:

@@ -7,8 +7,6 @@ from statistics import mean as average
 # Set decimal precision for financial calculations
 getcontext().prec = 10
 
-# Set decimal precision for financial calculations
-getcontext().prec = 10
 
 class Stage(Enum):
     GROWTH = "Growth"
@@ -23,7 +21,7 @@ class FinancialSnapshot:
     Core financial snapshot - focuses on fundamental value drivers
     """
     # General
-    marginal_tax_rate: Decimal
+    marginal_tax_rate: Decimal = 0.21
     
     # Income statement attributes
     last_annual_revenue: Money
