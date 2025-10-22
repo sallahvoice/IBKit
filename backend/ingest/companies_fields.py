@@ -1,12 +1,14 @@
 from typing import List
-
+import yfinance as yf
 
 def create_companies_fields(tickers: List[str]) -> List[dict]:
     """
     fetches certain company data (sector, mc..) needed for the Company class
     """
     companies_fields = []
+    companies_fields = []
     for ticker in tickers:
+        yf_ticker = yf.Ticker(ticker)
         info = ticker.info
         if not info:
             return {"error": "could not get ticker.info for companies tickers"}

@@ -39,7 +39,7 @@ def create_companies_snapshot_fields(dfs: List[pd.DataFrame]): #needs revision
         if ticker not in snapshots:
             snapshots[ticker] = {}
 
-        latest = df.iloc[0]
+        latest = df.iloc[0].to_dict()
 
         snapshots[ticker]["marginal_tax_rate"] = 0.21 #make it dynamic if possible
 
@@ -67,3 +67,5 @@ def create_companies_snapshot_fields(dfs: List[pd.DataFrame]): #needs revision
             snapshots[ticker]["market_cap"] = info.get("marketCap")
             snapshots[ticker]["current_shares_outstanding"] = info.get("sharesOutstanding")
             snapshots[ticker]["current_beta"] = info.get("beta")
+
+    return snapshots
