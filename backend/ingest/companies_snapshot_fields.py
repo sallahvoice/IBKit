@@ -3,21 +3,21 @@ import yfinance as yf
 
 def create_companies_snapshot_fields(dfs: List[pd.DataFrame]): #needs revision
     snapshots = {}
-    target_comany_ticker = dfs[0]["ticker"].iloc[0]
+    target_company_ticker = dfs[0]["ticker"].iloc[0]
 
     #for target company only 
-    snapshots[0][target_comany_ticker]["trailing_sales"] = None
-    snapshots[0][target_comany_ticker]["trailing_ebit"] = None
-    yf_ticker = yf.Ticker(target_comany_ticker)
+    snapshots[0][target_company_ticker]["trailing_sales"] = None
+    snapshots[0][target_company_ticker]["trailing_ebit"] = None
+    yf_ticker = yf.Ticker(target_company_ticker)
         #check if this method is actually available + are those fields valid
     try:
         quartrly_inc = yf_ticker.financials
         if "Total Revenue" in quartrly_inc.index:
-            snapshots[0][target_comany_ticker]["trailing_sales"] = quartrly_inc.loc["total Revenue"].iloc[:4].sum()
+            snapshots[0][target_company_ticker]["trailing_sales"] = quartrly_inc.loc["total Revenue"].iloc[:4].sum()
 
             for key in ["Operating Income", "Ebit", "EBIT"]:
                 if key in quartrly_inc.index:
-                    snapshots[0][target_comany_ticker]["trailing_ebit"] = quartrly_inc.loc[key].iloc[:4].sum()
+                    snapshots[0][target_company_ticker]["trailing_ebit"] = quartrly_inc.loc[key].iloc[:4].sum()
                     break
     except Exception:
         pass
@@ -26,7 +26,7 @@ def create_companies_snapshot_fields(dfs: List[pd.DataFrame]): #needs revision
         snapshots[ticker]["trailing_sales"] = latest.get("revenue")
         snapshots[ticker]["trailing_ebit"] = latest.get("ebit")
 
-    snapshots[0][target_comany_ticker]["last_annual_cash"] = latest.get("cashAndShortTermInvestments") #needed for target company only
+    snapshots[0][target_company_ticker]["last_annual_cash"] = latest.get("cashAndShortTermInvestments") #needed for target company only
     
 
     for df in dfs:

@@ -21,11 +21,11 @@ def analyze_company(ticker: str) -> Dict:
         ticker (str): The stock ticker symbol of the target company.
     """
 
-    filter = target_company_filters(ticker)
-    if not filter:
+    mc, beta = target_company_filters(ticker)
+    if not mc or not beta:
         return {"error": "No filter found for the given ticker."}
     
-    comparables = screener(filter)
+    comparables = screener(mc, beta)
     if not comparables:
         return {"error": "No comparable companies found."}
     
@@ -52,7 +52,7 @@ def analyze_company(ticker: str) -> Dict:
     
     companies = []
     for company_fields in companies_fields:
-        company = Company(company_fields)
+        company = Company.create_company_from_dict(company_fields)
         companies.append(company)
 
     if not companies:
