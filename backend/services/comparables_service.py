@@ -83,7 +83,19 @@ def analyze_company(ticker: str) -> Dict:
     if not companies_stages:
         return {"error": "failed to create stage objects for tickers"}
     
-    #next: StageParams & TwoStageParams
+    companies_betas = {}
+    for ticker, snapshot_fields in companies_snapshots.items():
+        companies_betas[ticker] = snapshot_fields["current_beta"]
+
+    companies_params = create_params_for_companies(companies_betas)
+
+    if not companies_params:
+        return {"error": "failed to create two stage params for tickers"}
+    
+    financial_snapshots = {} #map ticker -> FinancialSnapshot, to be used in ComparableCompany
+    for ticker, snapshot_fields in companies_snapshots.items():
+        financial_snapshots[ticker] = FinancialSnapshot(**snapshot_fields)
+
 
     
     #ComparableCompany & ComparableSet are the last classes you interact with
