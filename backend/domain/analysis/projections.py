@@ -251,13 +251,25 @@ class EquityMultiplesEngine:
 
     @staticmethod
     def value_of_equity(params: CompanyInputsHolder, info: TwoStageGrowthParams) -> Money:
-        high_growth_times_bv_equity = params.first_stage_growth * EquityMultiplesEngine.book_value_of_equity(params)
+        high_growth_times_bv_equity = (
+            params.first_stage_growth * 
+            EquityMultiplesEngine.book_value_of_equity(params)
+        )
         compound_first_stage_growth = (1 + params.first_stage_growth) ** params.years
         compound_second_stage_growth = (1 + params.second_stage_growth) ** params.years
-        growth_stage_discount_minus_growth = info.cost_of_equity - params.first_stage_growth
-        stable_stage_discount_minus_growth = info.cost_of_equity - params.second_stage_growth
+        
+        # Use pre-calculated cost of equity from params
+        growth_stage_discount_minus_growth = (
+            params.growth_stage_cost_of_equity - params.first_stage_growth
+        )
+        stable_stage_discount_minus_growth = (
+            params.stable_stage_cost_of_equity - params.second_stage_growth
+        )
+        
         mod_compound_first_stage_growth = (1 + params.first_stage_growth) ** (params.years - 1)
-        stable_growth_time_payout = (1 + params.second_stage_growth) * params.stable_stage_fcfe_percent_rev
+        stable_growth_time_payout = (
+            (1 + params.second_stage_growth) * params.stable_stage_fcfe_percent_rev
+        )
 
         return (
             high_growth_times_bv_equity
