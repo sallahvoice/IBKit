@@ -60,7 +60,7 @@ def analyze_company(ticker: str) -> Dict:
     if not companies_fields:
         return {"error": "Could not fetch company metadata (name, sector, etc.)"}
     
-    companies = {}  # Use dict for easier lookup: ticker -> Company
+    companies = {}
     for company_fields in companies_fields:
         company = Company.create_company_from_dict(company_fields)
         companies[company.ticker] = company
@@ -97,8 +97,10 @@ def analyze_company(ticker: str) -> Dict:
             return {"error": f"Failed to create FinancialSnapshot for {ticker}: {str(e)}"}
     
     
+    # Step 10: Prepare CompanyInputsHolder for each company
+    #first you need ProjectionConfig -> ProjectionResult objects
+    # -> CompanyInputsHolder (utilizes, Company, FinancialSnapshot, TwoStageGrowthParams, StageParams, ProjectionConfig, ProjectionResult) 
 
-    
     #EquityMultiplesEngine and FirmMultiplesEngine here
     
     #Build ComparableCompany objects

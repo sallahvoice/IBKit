@@ -4,7 +4,7 @@ from typing import Dict, Optional
 from decimal import Decimal
 from domain.financials.models import Stage, StageParams, TwoStageGrowthParams
 
-# Default market assumptions (you can make these configurable later)
+# Default market assumptions (make these configurable later)
 DEFAULT_RISK_FREE_RATE = Decimal("0.04")  # 4%
 DEFAULT_EQUITY_RISK_PREMIUM = Decimal("0.06")  # 6%
 DEFAULT_DEFAULT_SPREAD = Decimal("0.015")  # 1.5%
