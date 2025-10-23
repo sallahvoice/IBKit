@@ -135,91 +135,96 @@ class CompanyInputsHolder:
     growth_stage_reinvestment_rate: Percent
     stable_stage_reinvestment_rate: Percent
 
+    # --- After-tax EBIT margin, COE for both stages ---
+    growth_stage_after_tax_ebit_margin: Percent
+    growth_stage_cost_of_equity: Percent
+    stable_stage_cost_of_equity: Percent
+
     # --- Forward-looking earnings ---
     expected_next_year_net_income_per_share: Money
     # --- forward-looking-firm-multiples ---
     expected_next_year_after_tax_ebit_per_share: Money
 
     @classmethod
-def build_attrs(
-    cls,
-    c: "Company",
-    snapshot: "FinancialSnapshot",
-    assumptions: "ProjectionConfig",
-    params: "TwoStageGrowthParams",
-    projected: "ProjectionResult",
-) -> "CompanyInputsHolder":
-    
-    # Pre-calculate growth rates
-    first_stage_growth = params.growth_rate(snapshot, params.growth)
-    second_stage_growth = params.growth_rate(snapshot, params.stable)
-    
-    # Pre-calculate costs of capital
-    growth_wacc = params.wacc(params.growth, snapshot)
-    stable_wacc = params.wacc(params.stable, snapshot)
-    growth_cost_of_equity = params.cost_of_equity(params.growth)
-    stable_cost_of_equity = params.cost_of_equity(params.stable)
-    
-    # Calculate after-tax EBIT margin for growth stage
-    avg_ebit = sum(projected.ebit[:-1]) / len(projected.ebit[:-1])
-    avg_revenue = sum(projected.revenues[:-1]) / len(projected.revenues[:-1])
-    growth_after_tax_ebit_margin = (
-        avg_ebit * (1 - snapshot.marginal_tax_rate) / avg_revenue
-    )
-    
-    # Calculate FCFE as % of revenue (approximation)
-    fcfe_pct_net_income = snapshot.fcfe_as_percent_net_income
-    growth_fcfe_pct_rev = fcfe_pct_net_income * snapshot.profit_margin
-    
-    return cls(
-        # --- identifiers ---
-        ticker=c.ticker,
-        name=c.name,
-        years=params.growth.years,
-        shares=snapshot.current_shares_outstanding,
-
-        # --- growth assumptions ---
-        first_stage_growth=float(first_stage_growth),
-        second_stage_growth=float(second_stage_growth),
-
-        # --- fcfe assumptions ---
-        growth_stage_fcfe_percent_rev=float(growth_fcfe_pct_rev),
-        stable_stage_fcfe_percent_rev=assumptions.stable_year_net_income_percent_revenue,
-
-        # --- discount rate components ---
-        growth_stage_risk_free_rate=float(params.risk_free_rate),
-        stable_stage_risk_free_rate=float(params.risk_free_rate),
-        growth_stage_equity_risk_premium=float(params.equity_risk_premium),
-        stable_stage_equity_risk_premium=float(params.equity_risk_premium),
-        growth_stage_beta=params.growth.beta,
-        stable_stage_beta=params.stable.beta,
-
-        # --- profitability assumptions ---
-        growth_stage_profit_margin=float(snapshot.profit_margin),
-        stable_stage_profit_margin=assumptions.stable_year_net_income_percent_revenue,
+    def build_attrs(
+        cls,
+        c: "Company",
+        snapshot: "FinancialSnapshot",
+        assumptions: "ProjectionConfig",
+        params: "TwoStageGrowthParams",
+        projected: "ProjectionResult",
+    ) -> "CompanyInputsHolder":
         
-        # --- after-tax EBIT margin ---
-        growth_stage_after_tax_ebit_margin=float(growth_after_tax_ebit_margin),
-
-        # --- cost of capital ---
-        growth_stage_wacc=float(growth_wacc),
-        stable_stage_wacc=float(stable_wacc),
-        growth_stage_cost_of_equity=float(growth_cost_of_equity),
-        stable_stage_cost_of_equity=float(stable_cost_of_equity),
-
-        # --- reinvestment ---
-        growth_stage_reinvestment_rate=float(snapshot.reinvestment_rate),
-        stable_stage_reinvestment_rate=float(snapshot.reinvestment_rate),
-
-        # --- forward EPS ---
-        expected_next_year_net_income_per_share=(
-            projected.net_income[1] / snapshot.current_shares_outstanding
-        ),
-        expected_next_year_after_tax_ebit_per_share=(
-            projected.ebit[1] * (1 - snapshot.marginal_tax_rate) / 
-            snapshot.current_shares_outstanding
+        # Pre-calculate growth rates
+        first_stage_growth = params.growth_rate(snapshot, params.growth)
+        second_stage_growth = params.growth_rate(snapshot, params.stable)
+        
+        # Pre-calculate costs of capital
+        growth_wacc = params.wacc(params.growth, snapshot)
+        stable_wacc = params.wacc(params.stable, snapshot)
+        growth_cost_of_equity = params.cost_of_equity(params.growth)
+        stable_cost_of_equity = params.cost_of_equity(params.stable)
+        
+        # Calculate after-tax EBIT margin for growth stage
+        avg_ebit = sum(projected.ebit[:-1]) / len(projected.ebit[:-1])
+        avg_revenue = sum(projected.revenues[:-1]) / len(projected.revenues[:-1])
+        growth_after_tax_ebit_margin = (
+            avg_ebit * (1 - snapshot.marginal_tax_rate) / avg_revenue
         )
-    )
+        
+        # Calculate FCFE as % of revenue (approximation)
+        fcfe_pct_net_income = snapshot.fcfe_as_percent_net_income
+        growth_fcfe_pct_rev = fcfe_pct_net_income * snapshot.profit_margin
+        
+        return cls(
+            # --- identifiers ---
+            ticker=c.ticker,
+            name=c.name,
+            years=params.growth.years,
+            shares=snapshot.current_shares_outstanding,
+
+            # --- growth assumptions ---
+            first_stage_growth=float(first_stage_growth),
+            second_stage_growth=float(second_stage_growth),
+
+            # --- fcfe assumptions ---
+            growth_stage_fcfe_percent_rev=float(growth_fcfe_pct_rev),
+            stable_stage_fcfe_percent_rev=assumptions.stable_year_net_income_percent_revenue,
+
+            # --- discount rate components ---
+            growth_stage_risk_free_rate=float(params.risk_free_rate),
+            stable_stage_risk_free_rate=float(params.risk_free_rate),
+            growth_stage_equity_risk_premium=float(params.equity_risk_premium),
+            stable_stage_equity_risk_premium=float(params.equity_risk_premium),
+            growth_stage_beta=params.growth.beta,
+            stable_stage_beta=params.stable.beta,
+
+            # --- profitability assumptions ---
+            growth_stage_profit_margin=float(snapshot.profit_margin),
+            stable_stage_profit_margin=assumptions.stable_year_net_income_percent_revenue,
+            
+            # --- after-tax EBIT margin ---
+            growth_stage_after_tax_ebit_margin=float(growth_after_tax_ebit_margin),
+
+            # --- cost of capital ---
+            growth_stage_wacc=float(growth_wacc),
+            stable_stage_wacc=float(stable_wacc),
+            growth_stage_cost_of_equity=float(growth_cost_of_equity),
+            stable_stage_cost_of_equity=float(stable_cost_of_equity),
+
+            # --- reinvestment ---
+            growth_stage_reinvestment_rate=float(snapshot.reinvestment_rate),
+            stable_stage_reinvestment_rate=float(snapshot.reinvestment_rate),
+
+            # --- forward EPS ---
+            expected_next_year_net_income_per_share=(
+                projected.net_income[1] / snapshot.current_shares_outstanding
+            ),
+            expected_next_year_after_tax_ebit_per_share=(
+                projected.ebit[1] * (1 - snapshot.marginal_tax_rate) / 
+                snapshot.current_shares_outstanding
+            )
+        )
 
 @dataclass(frozen=True, slots=True)
 class EquityMultiplesEngine:
