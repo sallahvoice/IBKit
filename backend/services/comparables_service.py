@@ -97,6 +97,8 @@ def analyze_company(ticker: str) -> Dict:
             return {"error": f"Failed to create FinancialSnapshot for {ticker}: {str(e)}"}
     
     
+
+    
     #EquityMultiplesEngine and FirmMultiplesEngine here
     
     #Build ComparableCompany objects

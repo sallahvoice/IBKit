@@ -148,50 +148,47 @@ class CompanyInputsHolder:
         stage: "StageParams",
         params: "TwoStageGrowthParams",
         projected: "ProjectionResult",
-    ) -> "CompanyInputsHolder":
-        return cls(
-            # --- identifiers ---
-            ticker=c.ticker,
-            name=c.name,
-            years=stage.years,
-            shares=snapshot.current_shares_outstanding,
+        ) -> "CompanyInputsHolder":
+            return cls(
+                # --- identifiers ---
+                ticker=c.ticker,
+                name=c.name,
+                years=stage.years,
+                shares=snapshot.current_shares_outstanding,
 
-            # --- growth assumptions ---
-            first_stage_growth=params.growth_rate,
-            second_stage_growth=assumptions.stable_year_revenue_growth,
+                # --- growth assumptions ---
+                first_stage_growth=params.growth_rate,
+                second_stage_growth=assumptions.stable_year_revenue_growth,
 
-            # --- fcfe assumptions ---
-            growth_stage_fcfe_percent_rev=snapshot.fcfe_percent_revenue,   # <- pick a source
-            stable_stage_fcfe_percent_rev=assumptions.stable_year_net_income_percent_revenue,
+                # --- fcfe assumptions ---
+                growth_stage_fcfe_percent_rev=snapshot.fcfe_percent_revenue,   # <- pick a source
+                stable_stage_fcfe_percent_rev=assumptions.stable_year_net_income_percent_revenue,
 
-            # --- discount rate components ---
-            growth_stage_risk_free_rate=params.risk_free_rate,
-            stable_stage_risk_free_rate=params.risk_free_rate,
-            growth_stage_equity_risk_premium=params.equity_risk_premium,
-            stable_stage_equity_risk_premium=params.equity_risk_premium,
-            growth_stage_beta=params.growth.beta,
-            stable_stage_beta=params.stable.beta,
+                # --- discount rate components ---
+                growth_stage_risk_free_rate=params.risk_free_rate,
+                stable_stage_risk_free_rate=params.risk_free_rate,
+                growth_stage_equity_risk_premium=params.equity_risk_premium,
+                stable_stage_equity_risk_premium=params.equity_risk_premium,
+                growth_stage_beta=params.growth.beta,
+                stable_stage_beta=params.stable.beta,
 
-            # --- profitability assumptions ---
-            growth_stage_profit_margin=snapshot.profit_margin,
-            stable_stage_profit_margin=assumptions.stable_year_net_income_percent_revenue,
-            growth_stage_after_tax_ebit=params.growth_after_tax_ebit
+                # --- profitability assumptions ---
+                growth_stage_profit_margin=snapshot.profit_margin,
+                stable_stage_profit_margin=assumptions.stable_year_net_income_percent_revenue,
 
+                # --- cost of capital ---
+                growth_stage_wacc=params.wacc,
+                stable_stage_wacc=params.wacc,
 
-            # --- cost of capital ---
-            growth_stage_wacc=params.wacc,
-            stable_stage_wacc=params.wacc,
+                # --- reinvestment ---
+                growth_stage_reinvestment_rate=snapshot.reinvestment_rate,
+                stable_stage_reinvestment_rate=snapshot.reinvestment_rate,
 
-            # --- reinvestment ---
-            growth_stage_reinvestment_rate=snapshot.reinvestment_rate,
-            stable_stage_reinvestment_rate=snapshot.reinvestment_rate,
-
-            # --- forward EPS ---
-            expected_next_year_net_income_per_share=projected.net_income[1] / snapshot.current_shares_outstanding,
-            #--- forward firm multiples  ---
-            expected_next_year_after_tax_ebit_per_share=projected.ebit[1]*(1-snapshot.marginal_tax_rate)/ snapshot.current_shares_outstanding
-        )
-
+                # --- forward EPS ---
+                expected_next_year_net_income_per_share=projected.net_income[1] / snapshot.current_shares_outstanding,
+                #--- forward firm multiples  ---
+                expected_next_year_after_tax_ebit_per_share=projected.ebit[1]*(1-snapshot.marginal_tax_rate)/ snapshot.current_shares_outstanding
+            )
 
 @dataclass(frozen=True, slots=True)
 class EquityMultiplesEngine:
