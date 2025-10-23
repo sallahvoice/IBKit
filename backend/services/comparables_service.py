@@ -4,7 +4,7 @@ from ingest.fetch import target_company_filters, screener, create_financial_data
 from ingest.companies_fields import create_companies_fields
 from ingest.companies_snapshot_fields import create_companies_snapshot_fields
 from ingest.stage_params_fields import create_params_for_companies
-from ingest.company_input_holder import create_company_input_holder
+from backend.ingest.projection_config_fields import create_company_input_holder
 
 from domain.company import Company
 from domain.comparables import ComparableCompany, ComparableSet

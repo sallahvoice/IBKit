@@ -19,3 +19,4 @@ def create_companies_fields(tickers: List[str]) -> List[dict]:
             "market_cap": info.get("marketcap")
         }
         companies_fields.append(company_field)
+    return companies_fields
