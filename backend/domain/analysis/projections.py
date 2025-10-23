@@ -355,9 +355,11 @@ class FirmMultiplesEngine:
 
     @staticmethod
     def forward_ev_over_sales(params: CompanyInputsHolder) -> Multiple:
-        #used params.expected_next...after_tax_ebit instead of just expected_next...
         _enterprise_value = FirmMultiplesEngine.enterprise_value(params)
-        _expected_revenues_next_year = params.expected_next_year_after_tax_ebit_per_share/params.growth_stage_after_tax_ebit
+        _expected_revenues_next_year = (
+            params.expected_next_year_after_tax_ebit_per_share / 
+            params.growth_stage_after_tax_ebit_margin
+        )
         return _enterprise_value / _expected_revenues_next_year
 
     @staticmethod
