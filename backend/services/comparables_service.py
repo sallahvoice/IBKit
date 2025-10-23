@@ -4,6 +4,7 @@ from ingest.fetch import target_company_filters, screener, create_financial_data
 from ingest.companies_fields import create_companies_fields
 from ingest.companies_snapshot_fields import create_companies_snapshot_fields
 from ingest.stage_params_fields import create_params_for_companies
+from ingest.company_input_holder import create_company_input_holder
 
 from domain.company import Company
 from domain.comparables import ComparableCompany, ComparableSet
@@ -99,8 +100,23 @@ def analyze_company(ticker: str) -> Dict:
     
     # Step 10: Prepare CompanyInputsHolder for each company
     #first you need ProjectionConfig -> ProjectionResult objects
-    # -> CompanyInputsHolder (utilizes, Company, FinancialSnapshot, TwoStageGrowthParams, StageParams, ProjectionConfig, ProjectionResult) 
+    # Create ProjectionConfig (placeholder, implement as needed)
+    projection_config = {}
+    for ticker in tickers:
+        pass
 
+    company_inputs_holders = {}
+    for ticker in tickers:
+        company = companies.get(ticker)
+        snapshot = financial_snapshots.get(ticker)
+        params = companies_params.get(ticker)
+
+        if not company or not snapshot or not params:
+            return {"error": f"Missing data for {ticker} to create CompanyInputsHolder"}
+        
+
+
+    # -> CompanyInputsHolder (utilizes, Company, FinancialSnapshot, TwoStageGrowthParams, StageParams, ProjectionConfig, ProjectionResult) 
     #EquityMultiplesEngine and FirmMultiplesEngine here
     
     #Build ComparableCompany objects
