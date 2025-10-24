@@ -4,7 +4,7 @@ from ingest.fetch import target_company_filters, screener, create_financial_data
 from ingest.companies_fields import create_companies_fields
 from ingest.companies_snapshot_fields import create_companies_snapshot_fields
 from ingest.stage_params_fields import create_params_for_companies
-from backend.ingest.projection_config_fields import create_company_input_holder
+from ingest.projection_config_fields import create_projection_config
 
 from domain.company import Company
 from domain.comparables import ComparableCompany, ComparableSet
@@ -13,7 +13,8 @@ from domain.analysis.projections import (
     CompanyInputsHolder,
     ProjectionResult,
     EquityMultiplesEngine,
-    FirmMultiplesEngine
+    FirmMultiplesEngine,
+    build_projections
 )
 
 from db.repositories.comparable_repository import ComparableRepository
@@ -102,22 +103,22 @@ def analyze_company(ticker: str) -> Dict:
     #first you need ProjectionConfig -> ProjectionResult objects
     # Create ProjectionConfig (placeholder, implement as needed)
     projection_config = {}
+    projected = {}
+    inputs = {}
     for ticker in tickers:
-        pass
+        projection_config[ticker] = create_projection_config(two_stage_params=companies_params[ticker])
+        projected[ticker] = build_projections(base_revenue=financial_snapshots[ticker],
+                                      assumptions=projection_config[ticker],
+                                      params=companies_params[ticker],
+                                      years=10)
+        inputs[ticker] = CompanyInputsHolder.build_attrs(c=companies[ticker],
+                                                snapshot=financial_snapshots[ticker],
+                                                assumptions=projection_config,
+                                                params=companies_params[ticker],
+                                                projected=projected[ticker])
 
-    company_inputs_holders = {}
-    for ticker in tickers:
-        company = companies.get(ticker)
-        snapshot = financial_snapshots.get(ticker)
-        params = companies_params.get(ticker)
 
-        if not company or not snapshot or not params:
-            return {"error": f"Missing data for {ticker} to create CompanyInputsHolder"}
-        
-
-
-    # -> CompanyInputsHolder (utilizes, Company, FinancialSnapshot, TwoStageGrowthParams, StageParams, ProjectionConfig, ProjectionResult) 
-    #EquityMultiplesEngine and FirmMultiplesEngine here
+    # Step 11: Calculate multiples using both Equity and Firm approaches    
     
     #Build ComparableCompany objects
     
