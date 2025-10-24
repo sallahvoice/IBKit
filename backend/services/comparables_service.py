@@ -117,11 +117,103 @@ def analyze_company(ticker: str) -> Dict:
                                                 params=companies_params[ticker],
                                                 projected=projected[ticker])
 
+    companies_multiples = {}
+    for ticker in tickers:
+        ticker_inputs = inputs[ticker]
+        ticker_params = companies_params[ticker]
+        ticker_snapshot = financial_snapshots[ticker]
 
-    # Step 11: Calculate multiples using both Equity and Firm approaches    
-    
+        equity_engine = EquityMultiplesEngine(params=ticker_inputs,
+                                            info=ticker_params)
+        
+        firm_engine = FirmMultiplesEngine(params=ticker_inputs,
+                                        info=ticker_params,
+                                        snapshot=ticker_snapshot)
+        #equity multiples
+        forward_pe = equity_engine.forward_pe(params=ticker_inputs,
+                                            info=ticker_params)
+        price_to_book = equity_engine.price_to_book(params=ticker_inputs,
+                                                info=ticker_params)
+        forward_price_to_sales = equity_engine.forward_price_to_sales(params=ticker_inputs,
+                                                                info=ticker_params)
+        #firm multiples
+        forward_ev_over_ebit = firm_engine.forward_ev_over_ebit(params=ticker_inputs,
+                                                                snapshot=ticker_snapshot)
+        trailing_ev_over_ebit = firm_engine.trailing_ev_over_ebit(params=ticker_inputs,
+                                                                snapshot=ticker_snapshot)
+
+        forward_ev_over_sales = firm_engine.forward_ev_over_sales(params=ticker_inputs,)
+        
+
+# Step 11: Compute Multiples
+#
+# Create empty dict to store multiples: companies_multiples = {}
+# Loop through each ticker
+# For each ticker:
+#
+# Get the inputs[ticker] (CompanyInputsHolder)
+# Get the companies_params[ticker] (TwoStageGrowthParams)
+# Get the financial_snapshots[ticker] (FinancialSnapshot)
+# Compute 3 equity multiples using EquityMultiplesEngine:
+#
+# forward_pe
+# price_to_book
+# forward_price_to_sales
+#
+#
+# Compute 3 firm multiples using FirmMultiplesEngine:
+#
+# trailing_pe (you need to compute this - might need forward_pe * (1 + growth))
+# trailing_ev_to_ebit
+# trailing_ev_to_sales
+#
+#
+# Store all 6 multiples in companies_multiples[ticker] as a dict
+#
+#
+#
+# Step 12: Build ComparableCompany Objects
+#
+# Create empty list: comparable_companies = []
+# Loop through each ticker
+# For each ticker:
+#
+# Get ticker string
+# Get company name from companies[ticker].name
+# Get all 6 multiples from companies_multiples[ticker]
+# Create ComparableCompany object with all fields
+# Append to comparable_companies list
+#
+#
+#
+# Step 13: Create ComparableSet
+#
+# Create ComparableSet object: comp_set = ComparableSet(companies=comparable_companies)
+# Optionally validate it has data
+#
+#
+# Step 14: Save to Database
+#
+# Save companies: loop through companies dict and call company_repo.create_company(company.to_db_dict())
+# Save snapshots: loop through financial_snapshots dict and call snapshot_repo.create_snapshot(snapshot.to_db_dict())
+# Save comparables: loop through comparable_companies list and call comparable_repo.create_comparable(comp.to_db_dict())
+# Optionally save the ComparableSet metadata (which analysis run this was)
+#
+#
+# Step 15: Return Results
+#
+# Build response dict with:
+#
+# "success": True
+# "target_ticker": ticker
+# # len(comparable_companies)
+# "comparables": [list of ticker symbols]
+# Optionally: summary stats from ComparableSet (mean/median multiples)
+# Optionally: the full comparable data
+#
     #Build ComparableCompany objects
     
     #Aggregate into ComparableSet
     
     #save to db
+    
