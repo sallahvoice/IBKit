@@ -79,10 +79,10 @@ def analyze_company(ticker: str) -> Dict:
     
     # Step 7: Extract betas for creating stage params
     companies_betas = {}
-    for ticker, fields in snapshot_fields.items():
+    for ticker_key, fields in snapshot_fields.items():
         beta_value = fields.get("current_beta")
         if beta_value:
-            companies_betas[ticker] = beta_value
+            companies_betas[ticker_key] = beta_value
     
     if not companies_betas:
         return {"error": "Failed to extract beta values"}
@@ -94,96 +94,117 @@ def analyze_company(ticker: str) -> Dict:
     
     # Step 9: Convert snapshot fields to FinancialSnapshot objects
     financial_snapshots = {}
-    for ticker, fields in snapshot_fields.items():
+    for ticker_key, fields in snapshot_fields.items():
         try:
-            financial_snapshots[ticker] = FinancialSnapshot(**fields)
+            financial_snapshots[ticker_key] = FinancialSnapshot(**fields)
         except Exception as e:
-            return {"error": f"Failed to create FinancialSnapshot for {ticker}: {str(e)}"}
+            return {"error": f"Failed to create FinancialSnapshot for {ticker_key}: {str(e)}"}
     
-    
-    # Step 10: Prepare CompanyInputsHolder for each company
-    #first you need ProjectionConfig -> ProjectionResult objects
-    # Create ProjectionConfig (placeholder, implement as needed)
-    projection_config = {}
-    projected = {}
+    # Step 10: Create CompanyInputsHolder for each company
+    projection_configs = {}
+    projections = {}
     inputs = {}
-    for ticker in tickers:
-        projection_config[ticker] = create_projection_config(two_stage_params=companies_params[ticker])
-        projected[ticker] = build_projections(base_revenue=financial_snapshots[ticker],
-                                      assumptions=projection_config[ticker],
-                                      params=companies_params[ticker],
-                                      years=10)
-        inputs[ticker] = CompanyInputsHolder.build_attrs(c=companies[ticker],
-                                                snapshot=financial_snapshots[ticker],
-                                                assumptions=projection_config,
-                                                params=companies_params[ticker],
-                                                projected=projected[ticker])
+    
+    for ticker_key in tickers:
+        projection_configs[ticker_key] = create_projection_config(
+            two_stage_params=companies_params[ticker_key]
+        )
+        projections[ticker_key] = build_projections(
+            base_revenue=financial_snapshots[ticker_key],
+            assumptions=projection_configs[ticker_key],
+            params=companies_params[ticker_key],
+            years=5
+        )
+        inputs[ticker_key] = CompanyInputsHolder.build_attrs(
+            c=companies[ticker_key],
+            snapshot=financial_snapshots[ticker_key],
+            assumptions=projection_configs[ticker_key],
+            params=companies_params[ticker_key],
+            projected=projections[ticker_key]
+        )
 
+    # Step 11: Compute multiples for each company
     companies_multiples = {}
-    for ticker in tickers:
-        ticker_inputs = inputs[ticker]
-        ticker_params = companies_params[ticker]
-        ticker_snapshot = financial_snapshots[ticker]
+    
+    for ticker_key in tickers:
+        ticker_inputs = inputs[ticker_key]
+        ticker_params = companies_params[ticker_key]
+        ticker_snapshot = financial_snapshots[ticker_key]
 
-        equity_engine = EquityMultiplesEngine(params=ticker_inputs,
-                                            info=ticker_params)
-        
-        firm_engine = FirmMultiplesEngine(params=ticker_inputs,
-                                        info=ticker_params,
-                                        snapshot=ticker_snapshot)
-        #equity multiples
-        forward_pe = equity_engine.forward_pe(params=ticker_inputs,
-                                            info=ticker_params)
-        price_to_book = equity_engine.price_to_book(params=ticker_inputs,
-                                                info=ticker_params)
-        forward_price_to_sales = equity_engine.forward_price_to_sales(params=ticker_inputs,
-                                                                info=ticker_params)
-        #firm multiples
-        forward_ev_over_ebit = firm_engine.forward_ev_over_ebit(params=ticker_inputs,
-                                                                snapshot=ticker_snapshot)
-        trailing_ev_over_ebit = firm_engine.trailing_ev_over_ebit(params=ticker_inputs,
-                                                                snapshot=ticker_snapshot)
+        try:
+            # Equity multiples
+            forward_pe = EquityMultiplesEngine.forward_pe(ticker_inputs, ticker_params)
+            price_to_book = EquityMultiplesEngine.price_to_book(ticker_inputs, ticker_params)
+            forward_price_to_sales = EquityMultiplesEngine.forward_price_to_sales(ticker_inputs, ticker_params)
+            
+            # Trailing PE
+            trailing_pe = forward_pe * (1 + ticker_inputs.first_stage_growth)
+            
+            # Firm multiples
+            trailing_ev_to_ebit = FirmMultiplesEngine.trailing_ev_over_ebit(ticker_snapshot, ticker_inputs)
+            trailing_ev_to_sales = FirmMultiplesEngine.trailing_ev_over_sales(ticker_inputs)
 
-        forward_ev_over_sales = firm_engine.forward_ev_over_sales(params=ticker_inputs)
+            companies_multiples[ticker_key] = {
+                "forward_pe": forward_pe,
+                "forward_price_to_book": price_to_book,
+                "forward_price_to_sales": forward_price_to_sales,
+                "trailing_pe": trailing_pe,
+                "trailing_ev_to_ebit": trailing_ev_to_ebit,
+                "trailing_ev_to_sales": trailing_ev_to_sales
+            }
+        except Exception as e:
+            print(f"Warning: Failed to compute multiples for {ticker_key}: {str(e)}")
+            continue
 
-        companies_multiples[ticker] = {
-            "forward_pe": forward_pe,
-            "price_to_book": price_to_book,
-            "forward_price_to_sales": forward_price_to_sales,
-            "forward_ev_to_ebit": forward_ev_over_ebit,
-            "trailing_ev_to_ebit": trailing_ev_over_ebit,
-            "forward_ev_to_sales": forward_ev_over_sales
-        }
-
+    # Step 12: Build ComparableCompany objects
     comparable_companies = []
-    for ticker in tickers:
-        multiples = companies_multiples[ticker]
+    
+    for ticker_key in tickers:
+        if ticker_key not in companies_multiples:
+            continue
+            
+        multiples = companies_multiples[ticker_key]
         comparable_company = ComparableCompany(
-            ticker=ticker,
-            name=companies[ticker].name,
+            ticker=ticker_key,
+            name=companies[ticker_key].name,
             forward_pe=multiples["forward_pe"],
-            price_to_book=multiples["price_to_book"],
+            forward_price_to_book=multiples["forward_price_to_book"],
             forward_price_to_sales=multiples["forward_price_to_sales"],
-            forward_ev_over_ebit=multiples["forward_ev_to_ebit"],
+            trailing_pe=multiples["trailing_pe"],
             trailing_ev_to_ebit=multiples["trailing_ev_to_ebit"],
-            forward_ev_over_sales=multiples["forward_ev_to_sales"] 
+            trailing_ev_to_sales=multiples["trailing_ev_to_sales"]
         )
         comparable_companies.append(comparable_company)
 
+    # Step 13: Create ComparableSet
     comparable_set = ComparableSet(companies=comparable_companies)
 
+    # Step 14: Save to database
     company_repo = CompanyRepository()
     for company in companies.values():
         company_db_format = company.to_db_dict()
         company_repo.create_company(company_data=company_db_format)
 
-    snpashot_repo = SnapshotRepository()
+    snapshot_repo = SnapshotRepository()
     for snapshot in financial_snapshots.values():
         snapshot_db_format = snapshot.to_db_dict()
-        snpashot_repo.create_snapshot(snapshot_data=snapshot_db_format)
+        snapshot_repo.create_snapshot(snapshot_data=snapshot_db_format)
 
     comparables_repo = ComparableRepository()
-    for comparable in comparable_companies.values():
-        comprable_db_format = comparable.to_db_dict()
-        comparables_repo.create_comparable(comp_data=comprable_db_format)
+    for comparable in comparable_companies:
+        comparable_db_format = comparable.to_db_dict()
+        comparables_repo.create_comparable(comp_data=comparable_db_format)
 
+    # Step 15: Return results, we might exclude it but for now multiple average methods apply lower & upper bounds for edge cases
+    return {
+        "success": True,
+        "target_ticker": ticker,
+        "comparable_count": len(comparable_companies),
+        "comparables": [comp.ticker for comp in comparable_companies],
+        "summary_stats": {
+            "avg_forward_pe": comparable_set.average_multiple("forward_pe"),
+            "median_forward_pe": comparable_set.median_multiple("forward_pe"),
+            "avg_trailing_ev_to_ebit": comparable_set.average_multiple("trailing_ev_to_ebit"),
+            "median_trailing_ev_to_ebit": comparable_set.median_multiple("trailing_ev_to_ebit")
+        }
+    }
