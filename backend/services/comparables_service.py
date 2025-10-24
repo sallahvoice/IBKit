@@ -17,7 +17,9 @@ from domain.analysis.projections import (
     build_projections
 )
 
+from db.repositories.company_repository import CompanyRepository
 from db.repositories.comparable_repository import ComparableRepository
+from db.repositories.snapshot_repository import SnapshotRepository
 
 
 def analyze_company(ticker: str) -> Dict:
@@ -170,5 +172,18 @@ def analyze_company(ticker: str) -> Dict:
 
     comparable_set = ComparableSet(companies=comparable_companies)
 
-    for comp in comparable_companies:
-        
+    company_repo = CompanyRepository()
+    for company in companies.values():
+        company_db_format = company.to_db_dict()
+        company_repo.create_company(company_data=company_db_format)
+
+    snpashot_repo = SnapshotRepository()
+    for snapshot in financial_snapshots.values():
+        snapshot_db_format = snapshot.to_db_dict()
+        snpashot_repo.create_snapshot(snapshot_data=snapshot_db_format)
+
+    comparables_repo = ComparableRepository()
+    for comparable in comparable_companies.values():
+        comprable_db_format = comparable.to_db_dict()
+        comparables_repo.create_comparable(comp_data=comprable_db_format)
+

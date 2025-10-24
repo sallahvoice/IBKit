@@ -2,7 +2,7 @@ from typing import Optional, Dict, List
 from datetime import date
 from db.repositories.base_repository import BaseRepository
 from db.conn import database
-from domain.company import Company
+from backend.domain.company import Company
 
 
 class CompanyRepository(BaseRepository):

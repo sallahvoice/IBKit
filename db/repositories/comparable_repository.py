@@ -4,7 +4,7 @@ from db.repositories.base_repository import BaseRepository
 from db.conn import database
 
 
-class MultiplesRepository(BaseRepository):
+class ComparableRepository(BaseRepository):
     """Repository for managing comparable companies multiples."""
 
     def __init__(self):
