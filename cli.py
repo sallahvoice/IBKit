@@ -3,7 +3,7 @@
 import argparse
 
 try:
-    from domain.company import Company
+    from backend.domain.company import Company
 except ImportError:
     Company = None
 

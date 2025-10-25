@@ -1,5 +1,4 @@
 from typing import Optional, Dict, List
-from datetime import date
 from db.repositories.base_repository import BaseRepository
 from db.conn import database
 

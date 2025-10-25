@@ -1,5 +1,5 @@
 import time
-from utils.logger import logger
+from backend.utils.logger import logger
 from contextlib import contextmanager
 import mysql.connector
 from mysql.connector import Error
@@ -21,7 +21,7 @@ class DatabaseConnection:
             conn = self.pool.get_connection()
             yield conn
             conn.commit()
-        except mysql.connector.error as e:
+        except mysql.connector.Error as e:
             if conn:
                 conn.rollback()
             logger.info(f"Database error : {e}")
