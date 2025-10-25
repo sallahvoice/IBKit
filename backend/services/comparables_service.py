@@ -1,5 +1,4 @@
-from typing import Optional, Dict, List
-
+from typing import Dict
 from ingest.fetch import target_company_filters, screener, create_financial_data
 from ingest.companies_fields import create_companies_fields
 from ingest.companies_snapshot_fields import create_companies_snapshot_fields
@@ -8,10 +7,9 @@ from ingest.projection_config_fields import create_projection_config
 
 from domain.company import Company
 from domain.comparables import ComparableCompany, ComparableSet
-from domain.financials.models import FinancialSnapshot, TwoStageGrowthParams
+from domain.financials.models import FinancialSnapshot
 from domain.analysis.projections import (
     CompanyInputsHolder,
-    ProjectionResult,
     EquityMultiplesEngine,
     FirmMultiplesEngine,
     build_projections
