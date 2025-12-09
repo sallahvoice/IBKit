@@ -2,7 +2,7 @@ from dataclasses import dataclass, asdict
 from decimal import Decimal, getcontext
 from typing import Optional, Dict
 from enum import Enum
-from analysis.projections import ProjectionResult
+from backend.domain.analysis.projections import ProjectionResult
 from statistics import mean as average
 # Set decimal precision for financial calculations
 getcontext().prec = 10

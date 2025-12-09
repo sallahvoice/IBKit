@@ -8,3 +8,4 @@ __pycache__/
 .functions_cache
 
 *.log
+tests/

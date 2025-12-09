@@ -1,6 +1,6 @@
 from dataclasses import dataclass, replace, asdict
 from typing import Union, List
-from domain.company import Company
+from backend.domain.company import Company
 from domain.financials.models import FinancialSnapshot, StageParams, TwoStageGrowthParams
 from utils.converge import project_revenue, project_other_line_items, converge_growth
 

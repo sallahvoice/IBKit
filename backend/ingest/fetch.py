@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 try:
     from domain.comparables import ComparableSet
     from simplai.ai import extract_info_gemini
-    from utils.decorators import retry
+    from backend.utils.decorators import retry
     from utils.logger import logger
     from utils.redis_client import redis_client
     from webhook import notify_cache_expiry
@@ -469,6 +469,7 @@ def run_financial_analysis(user_prompt: Optional[str] = None) -> Optional[dict]:
 
 
 if __name__ == "__main__":
+    
     main_results = run_financial_analysis(
         user_prompt="What revenue trends can you spot across these companies?"
     )

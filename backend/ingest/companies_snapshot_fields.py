@@ -1,5 +1,7 @@
-from typing import List, pd
+from typing import List
 import yfinance as yf
+import pandas as pd
+from pandas import DataFrame
 
 def create_companies_snapshot_fields(dfs: List[pd.DataFrame]): #needs revision
     snapshots = {}

@@ -2,7 +2,7 @@
 
 from typing import Dict, Optional
 from decimal import Decimal
-from domain.financials.models import Stage, StageParams, TwoStageGrowthParams
+from backend.domain.financials.models import Stage, StageParams, TwoStageGrowthParams
 
 # Default market assumptions (make these configurable later)
 DEFAULT_RISK_FREE_RATE = Decimal("0.04")  # 4%

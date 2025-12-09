@@ -1,9 +1,9 @@
 from typing import Dict
-from ingest.fetch import target_company_filters, screener, create_financial_data
-from ingest.companies_fields import create_companies_fields
-from ingest.companies_snapshot_fields import create_companies_snapshot_fields
-from ingest.stage_params_fields import create_params_for_companies
-from ingest.projection_config_fields import create_projection_config
+from backend.ingest.fetch import target_company_filters, screener, create_financial_data
+from backend.ingest.companies_fields import create_companies_fields
+from backend.ingest.companies_snapshot_fields import create_companies_snapshot_fields
+from backend.ingest.stage_params_fields import create_params_for_companies
+from backend.ingest.projection_config_fields import create_projection_config
 
 from domain.company import Company
 from domain.comparables import ComparableCompany, ComparableSet
