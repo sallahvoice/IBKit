@@ -1,7 +1,7 @@
 from dataclasses import dataclass, replace, asdict
 from typing import Union, List
 from backend.domain.company import Company
-from backend.domain.financials.models import FinancialSnapshot, StageParams, TwoStageGrowthParams
+from backend.domain.base import FinancialSnapshot, StageParams, TwoStageGrowthParams
 from backend.utils.converge import project_revenue, project_other_line_items, converge_growth
 
 Percent = float
