@@ -1,5 +1,5 @@
 import requests
-from utils.logger import logger
+from backend.utils.logger import logger
 
 
 def notify_cache_expiry(cache_key_param: str) -> bool:

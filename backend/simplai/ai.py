@@ -4,13 +4,13 @@ Provides functionality to analyze financial data with AI-powered insights.
 """
 
 import os
-from dotenv import load_dotenv()
-from google.generativeai import genai
-from utils.logger import logger
+from dotenv import load_dotenv
+import google.generativeai as genai
+from backend.utils.logger import logger
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI-API-KEY"))
-model = genai.generativemodel(model_name="gemini-2.5-flash")
+model = genai.GenerativeModel(model_name="gemini-2.5-flash")
 
 def extract_info_gemini(df, user_prompt):
     text_csv = df.to_csv(index=false)

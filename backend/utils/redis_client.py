@@ -1,27 +1,27 @@
 import os
 import redis
 from dotenv import load_dotenv
-from logger import logger
+from backend.utils.logger import logger
 from fastapi import FastAPI, Request
-from utils.decorators import retry
+from backend.utils.decorators import retry
 
 load_dotenv()
 app = FastAPI()
 
-@retry
-def set_connection():
-    try:
-        redis_client = redis.Redis(
-            host=os.getenv("REDIS_HOST", "localhost"),
-            port=int(os.getenv("REDIS_PORT", 6379)),
-            db=int(os.getenv("REDIS_DB", 0)),
-            password=os.getenv("REDIS_PASSWORD", None)
-        )
-        redis_client.ping()
-        logger.info("Redis connection established")
-    except redis.exceptions.ConnectionError as e:
-        logger.error(f"Redis connection failed: {e}")
-        redis_client = None
+
+try:
+    redis_client = redis.Redis(
+        host=os.getenv("REDIS_HOST", "localhost"),
+        port=int(os.getenv("REDIS_PORT", 6379)),
+        db=int(os.getenv("REDIS_DB", 0)),
+        password=os.getenv("REDIS_PASSWORD", None)
+    )
+    redis_client.ping()
+    logger.info("Redis connection established")
+except redis.exceptions.ConnectionError as e:
+    logger.error(f"Redis connection failed: {e}")
+    redis_client = None
+
 
 @app.post("/expire_cache/")
 async def expire_cache(request: Request):

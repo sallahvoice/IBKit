@@ -15,4 +15,4 @@ def analyze_apple():
 
 
 if __name__ == "__main__":
-    analyze_apple()
+    analyze_apple

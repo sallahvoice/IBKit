@@ -12,17 +12,17 @@ import requests
 import yfinance as yf
 from dotenv import load_dotenv
 
-# Handle imports with try/except to avoid import-error
+
 try:
-    from domain.comparables import ComparableSet
-    from simplai.ai import extract_info_gemini
+    from backend.domain.comparables import ComparableSet
+    from backend.simplai.ai import extract_info_gemini
     from backend.utils.decorators import retry
-    from utils.logger import logger
-    from utils.redis_client import redis_client
-    from webhook import notify_cache_expiry
-except ImportError:
-    # Fallbacks for development/testing
-    ComparableSet, redis_client, logger = None, None, None
+    from backend.utils.logger import logger
+    from backend.utils.redis_client import redis_client
+    from backend.ingest.webhook import notify_cache_expiry
+except ImportError as e:
+    print("IMPORT ERROR IN fetch.py:", e)
+    raise
 
 
 load_dotenv()
