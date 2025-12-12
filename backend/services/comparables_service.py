@@ -5,10 +5,10 @@ from backend.ingest.companies_snapshot_fields import create_companies_snapshot_f
 from backend.ingest.stage_params_fields import create_params_for_companies
 from backend.ingest.projection_config_fields import create_projection_config
 
-from domain.company import Company
-from domain.comparables import ComparableCompany, ComparableSet
-from domain.financials.models import FinancialSnapshot
-from domain.analysis.projections import (
+from backend.domain.company import Company
+from backend.domain.comparables import ComparableCompany, ComparableSet
+from backend.domain.financials.models import FinancialSnapshot
+from backend.domain.analysis.projections import (
     CompanyInputsHolder,
     EquityMultiplesEngine,
     FirmMultiplesEngine,

@@ -1,11 +1,11 @@
 import time
-from backend.utils.logger import logger
+from backend.utils.logger import get_logger
 from contextlib import contextmanager
 import mysql.connector
 from mysql.connector import Error
 
 
-logger = logger.get_logger(__file__)
+logger = get_logger(__file__)
 
 
 class DatabaseConnection:

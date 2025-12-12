@@ -27,4 +27,6 @@ def setup_logger(name:str=__name__):
         logger.addHandler(stream_handler)
     return logger
 
-logger=setup_logger(__name__)
+def get_logger(name):
+    """this func ensures each file has its own logger name"""
+    return setup_logger(name)

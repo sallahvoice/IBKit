@@ -1,5 +1,5 @@
 from typing import List
-from utils.decorators import timing
+from backend.utils.decorators import timing
 Percent = float
 Money = int
 

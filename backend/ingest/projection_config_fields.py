@@ -1,5 +1,5 @@
-from domain.analysis.projections import ProjectionConfig
-from domain.financials.models import TwoStageGrowthParams
+from backend.domain.analysis.projections import ProjectionConfig
+from backend.domain.financials.models import TwoStageGrowthParams
 from decimal import Decimal
 
 # Default stable year assumptions
