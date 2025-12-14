@@ -1,7 +1,7 @@
 from backend.services.comparables_service import analyze_company
 
 def analyze_apple():
-    result = analyze_company("APPL")
+    result = analyze_company("AAPL")
 
     if "error" in result:
         print(f"❌ error: {result['error']}")
@@ -15,4 +15,4 @@ def analyze_apple():
 
 
 if __name__ == "__main__":
-    analyze_apple
+    analyze_apple()

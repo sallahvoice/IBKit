@@ -42,20 +42,16 @@ def analyze_company(ticker: str) -> Dict:
         return {"error": "No comparable companies found"}
     
     # Step 3: Fetch financial data for target + comparables
-    all_tickers = [ticker] + comparables
+    target_ticker = ticker
+    peer_tickers = comparables
+    all_tickers = [target_ticker] + peer_tickers
+
     financial_data = create_financial_data(all_tickers)
     if not financial_data:
         return {"error": "Could not fetch financial data"}
     
     # Step 4: Extract tickers from dataframes (validation)
-    tickers = []
-    for df in financial_data:
-        df_ticker = df.get("ticker")
-        if df_ticker:
-            tickers.append(df_ticker)
-    
-    if not tickers:
-        return {"error": "Failed to extract tickers from financial data"}
+    tickers = all_tickers
     
     # Step 5: Create Company objects
     companies_fields = create_companies_fields(tickers)
@@ -157,7 +153,7 @@ def analyze_company(ticker: str) -> Dict:
     # Step 12: Build ComparableCompany objects
     comparable_companies = []
     
-    for ticker_key in tickers:
+    for ticker_key in peer_tickers:
         if ticker_key not in companies_multiples:
             continue
             
