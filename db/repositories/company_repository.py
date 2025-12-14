@@ -1,6 +1,6 @@
 from typing import Optional, Dict, List
 from db.repositories.base_repository import BaseRepository
-from db.conn import database
+from db.database import database
 from backend.domain.company import Company
 
 

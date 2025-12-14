@@ -6,7 +6,9 @@ Provides functionality to analyze financial data with AI-powered insights.
 import os
 from dotenv import load_dotenv
 import google.generativeai as genai
-from backend.utils.logger import logger
+from backend.utils.logger import get_logger
+
+logger = get_logger(__file__)
 
 load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI-API-KEY"))

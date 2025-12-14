@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Optional, Dict
 from datetime import date
 from db.repositories.base_repository import BaseRepository
-from db.conn import database
+from db.database import database
 
 
 class SnapshotRepository(BaseRepository):

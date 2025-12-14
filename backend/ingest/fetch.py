@@ -17,7 +17,7 @@ try:
     from backend.domain.comparables import ComparableSet
     from backend.simplai.ai import extract_info_gemini
     from backend.utils.decorators import retry
-    from backend.utils.logger import logger
+    from backend.utils.logger import get_logger
     from backend.utils.redis_client import redis_client
     from backend.ingest.webhook import notify_cache_expiry
 except ImportError as e:
@@ -28,6 +28,7 @@ except ImportError as e:
 load_dotenv()
 api_key = os.getenv("FINANCIAL-PREP-API-KEY")
 currancy_api_key = os.getenv("CURRANCY-API-KEY")
+logger = get_logger(__file__)
 
 
 def are_dataframes_equal(df1: pd.DataFrame, df2: pd.DataFrame) -> bool:

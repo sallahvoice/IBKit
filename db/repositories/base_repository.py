@@ -1,5 +1,5 @@
 from typing import Optional, Dict, Any, List
-from db.conn import database
+from db.database import database
 
 
 class BaseRepository:

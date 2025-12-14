@@ -1,13 +1,13 @@
 import os
 import redis
 from dotenv import load_dotenv
-from backend.utils.logger import logger
+from backend.utils.logger import get_logger
 from fastapi import FastAPI, Request
 from backend.utils.decorators import retry
 
 load_dotenv()
 app = FastAPI()
-
+logger = get_logger(__file__)
 
 try:
     redis_client = redis.Redis(
