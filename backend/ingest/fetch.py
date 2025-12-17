@@ -251,7 +251,7 @@ def create_financial_data(tickers: List[str]) -> List[pd.DataFrame]: #target com
                         if old_cached_data:
                             old_data = json.loads(old_cached_data)
                             # Use sophisticated comparison instead of simple JSON comparison
-                            if not compare_ticker_data(ticker_data, old_data):
+                            if not compare_ticker_data(ticker_data, old_data): 
                                 should_notify = True
                         else:
                             should_notify = True  # First time caching this ticker
