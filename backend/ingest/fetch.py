@@ -105,7 +105,7 @@ REQUIRED_STATEMENTS = (
 )
 
 
-@retry
+@retry()
 def target_company_filters(target_company_ticker: str) -> Tuple[float, float]:
     """
     Get market cap and beta for the target company from Yahoo Finance.
@@ -163,7 +163,7 @@ def screener(
         return []
 
 
-@retry
+@retry()
 def create_financial_data(tickers: List[str]) -> List[pd.DataFrame]: #target company+screener tickers
     """Fetch financial data with ticker-level caching and smart comparison"""
     if not api_key:
@@ -439,7 +439,7 @@ def run_financial_analysis(user_prompt: Optional[str] = None) -> Optional[dict]:
         logger.info(f"Processing {len(tickers)} tickers")
 
     # Step 1: Fetch data
-    dfs = fetch_financial_data(tickers)
+    dfs = create_financial_data(tickers)
     if not dfs:
         if logger:
             logger.error("No data fetched")
