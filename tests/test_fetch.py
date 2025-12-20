@@ -1,11 +1,12 @@
-"""this file tests the create_financial_data function & mocks (redis_client, webhooks, API responses)"""
+"""Tests for create_financial_data function with mocked redis_client, webhooks, and API responses"""
 
 import pytest
 from unittest.mock import patch, MagicMock
 import json
 import pandas as pd
 
-from backend.ingest.fetch import create_financial_data
+from backend.ingest import fetch
+from backend.ingest.fetch import REQUIRED_STATEMENTS
 
 
 @pytest.fixture
@@ -29,90 +30,165 @@ def sample_financial_data():
     df_balance["ticker"] = "TSLA"
     df_balance["statement_type"] = "balance-sheet-statement"
 
+    df_cashflow = pd.DataFrame([{
+        "operating_cash_flow": 50000,
+        "capital_expenditure": 20000,
+        "free_cash_flow": 30000,
+    }])
+    df_cashflow["ticker"] = "TSLA"
+    df_cashflow["statement_type"] = "cash-flow-statement"
+
     return [
         {"statement_type": "income-statement",
          "data": df_income.to_dict("records")},
         {"statement_type": "balance-sheet-statement",
          "data": df_balance.to_dict("records")},
+        {"statement_type": "cash-flow-statement",
+         "data": df_cashflow.to_dict("records")},
     ]
 
 
 def test_cache_and_webhook(sample_financial_data):
+    """Test that webhook is called on cache miss but not on cache hit"""
     ticker = "TSLA"
 
-    with patch("backend.ingest.fetch.redis_client") as mock_redis, \
-         patch("backend.ingest.fetch.notify_cache_expiry") as mock_webhook, \
-         patch("backend.ingest.fetch.requests.get") as mock_fetch:
+    with patch.object(fetch, "redis_client") as mock_redis, \
+         patch.object(fetch, "notify_cache_expiry") as mock_webhook, \
+         patch.object(fetch, "requests") as mock_requests, \
+         patch.object(fetch, "logger") as mock_logger:
 
-        # IMPORTANT: we should redis_client truthy in boolean context
-        # The fetch code checks if redis_client and ticker_data:
         mock_redis.__bool__ = lambda self: True
         
-        # Fake API response for ALL required statements
-        mock_resp = MagicMock()
-        mock_resp.status_code = 200
-        # Return data for each statement type
-        mock_resp.json.return_value = [{"anything": 1000}]
-        mock_fetch.return_value = mock_resp
+        # Mock API responses for all 3 required statements
+        mock_responses = []
+        for stmt in REQUIRED_STATEMENTS:
+            resp = MagicMock()
+            resp.status_code = 200
+            if "income" in stmt:
+                resp.json.return_value = [{"income": 150000, "ebit": 30000}]
+            elif "balance" in stmt:
+                resp.json.return_value = [{"cash": 20000, "equipment": 11000}]
+            elif "cash" in stmt:
+                resp.json.return_value = [{"operating_cash_flow": 50000}]
+            mock_responses.append(resp)
+        
+        mock_requests.get.side_effect = mock_responses
+        mock_requests.RequestException = Exception
 
-        # Cache miss -> first call returns None (no cached data)
+        # CACHE MISS TEST
         mock_redis.get.return_value = None
         mock_redis.set.return_value = True
 
-        dfs = create_financial_data([ticker])
-        assert dfs
-        # On cache miss, webhook should be called because it's first time caching
+        result = fetch.create_financial_data([ticker])
+        
+        assert isinstance(result, list), f"Expected list, got {type(result)}"
+        assert len(result) == 3, f"Should return 3 DataFrames, got {len(result)}"
+        assert mock_redis.set.called, "Redis set should be called"
         assert mock_webhook.called, "Webhook should be called on cache miss"
-        assert mock_webhook.call_count == 1
 
-        # Reset for next test
+        # Reset for cache hit test
         mock_webhook.reset_mock()
         mock_redis.reset_mock()
+        mock_requests.reset_mock()
 
-        # Cache hit -> return the cached data
+        # CACHE HIT TEST
         mock_redis.get.return_value = json.dumps(sample_financial_data)
 
-        dfs2 = create_financial_data([ticker])
-        assert dfs2
-        # On cache hit with same data, webhook should NOT be called
-        assert not mock_webhook.called, "Webhook should not be called when data unchanged"
-
-        # Verify Redis was accessed
-        mock_redis.get.assert_called()
-        # On cache hit, set should not be called since we return early
-        # mock_redis.set.assert_not_called()
+        dfs2 = fetch.create_financial_data([ticker])
+        
+        assert isinstance(dfs2, list), f"Expected list, got {type(dfs2)}"
+        assert len(dfs2) == 3, "Should return 3 cached DataFrames"
+        assert not mock_webhook.called, "Webhook should not be called on cache hit"
+        assert not mock_redis.set.called, "Redis set should NOT be called on cache hit"
 
 
 def test_webhook_called_on_data_change(sample_financial_data):
-    """Test that webhook IS called when cached data changes"""
+    """Test that webhook IS called when fetched data differs from cached data"""
     ticker = "TSLA"
-    
-    # Modified data (different values, to mimick change)
-    modified_data = [
-        {"statement_type": "income-statement",
-         "data": [{"income": 999999, "ebit": 50000, "ticker": "TSLA", "statement_type": "income-statement"}]},
-        {"statement_type": "balance-sheet-statement",
-         "data": [{"cash": 99999, "equipment": 88888, "ticker": "TSLA", "statement_type": "balance-sheet-statement"}]},
-    ]
 
-    with patch("backend.ingest.fetch.redis_client") as mock_redis, \
-         patch("backend.ingest.fetch.notify_cache_expiry") as mock_webhook, \
-         patch("backend.ingest.fetch.requests.get") as mock_fetch:
+    with patch.object(fetch, "redis_client") as mock_redis, \
+         patch.object(fetch, "notify_cache_expiry") as mock_webhook, \
+         patch.object(fetch, "requests") as mock_requests, \
+         patch.object(fetch, "logger") as mock_logger:
 
         mock_redis.__bool__ = lambda self: True
         
-        # Mock API to return new data
-        mock_resp = MagicMock()
-        mock_resp.status_code = 200
-        mock_resp.json.return_value = [{"income": 999999, "ebit": 50000}]
-        mock_fetch.return_value = mock_resp
+        # Mock API to return DIFFERENT data
+        mock_responses = []
+        for stmt in REQUIRED_STATEMENTS:
+            resp = MagicMock()
+            resp.status_code = 200
+            if "income" in stmt:
+                resp.json.return_value = [{"income": 999999, "ebit": 88888}]
+            elif "balance" in stmt:
+                resp.json.return_value = [{"cash": 777777, "equipment": 66666}]
+            elif "cash" in stmt:
+                resp.json.return_value = [{"operating_cash_flow": 555555}]
+            mock_responses.append(resp)
+        
+        mock_requests.get.side_effect = mock_responses
+        mock_requests.RequestException = Exception
 
-        # Return old cached data
-        mock_redis.get.return_value = json.dumps(sample_financial_data)
+        # First get: None (cache miss), second get: old data
+        mock_redis.get.side_effect = [
+            None,
+            json.dumps(sample_financial_data),
+        ]
         mock_redis.set.return_value = True
 
-        dfs = create_financial_data([ticker])
-        assert dfs
+        dfs = fetch.create_financial_data([ticker])
         
-        # Webhook should be called because data changed
+        assert isinstance(dfs, list), f"Expected list, got {type(dfs)}"
+        assert len(dfs) == 3, "Should return 3 DataFrames"
         assert mock_webhook.called, "Webhook should be called when data changes"
+
+
+def test_no_webhook_when_data_unchanged():
+    """Test that webhook is NOT called when fetched data matches cached data"""
+    ticker = "TSLA"
+    
+    # Same data for both API and cache
+    same_data = [
+        {"statement_type": "income-statement",
+         "data": [{"income": 150000, "ebit": 30000, "ticker": "TSLA", "statement_type": "income-statement"}]},
+        {"statement_type": "balance-sheet-statement",
+         "data": [{"cash": 20000, "equipment": 11000, "ticker": "TSLA", "statement_type": "balance-sheet-statement"}]},
+        {"statement_type": "cash-flow-statement",
+         "data": [{"operating_cash_flow": 50000, "ticker": "TSLA", "statement_type": "cash-flow-statement"}]},
+    ]
+
+    with patch.object(fetch, "redis_client") as mock_redis, \
+         patch.object(fetch, "notify_cache_expiry") as mock_webhook, \
+         patch.object(fetch, "requests") as mock_requests, \
+         patch.object(fetch, "logger") as mock_logger:
+
+        mock_redis.__bool__ = lambda self: True
+        
+        # Mock API to return SAME data as cached
+        mock_responses = []
+        for stmt in REQUIRED_STATEMENTS:
+            resp = MagicMock()
+            resp.status_code = 200
+            if "income" in stmt:
+                resp.json.return_value = [{"income": 150000, "ebit": 30000}]
+            elif "balance" in stmt:
+                resp.json.return_value = [{"cash": 20000, "equipment": 11000}]
+            elif "cash" in stmt:
+                resp.json.return_value = [{"operating_cash_flow": 50000}]
+            mock_responses.append(resp)
+        
+        mock_requests.get.side_effect = mock_responses
+        mock_requests.RequestException = Exception
+
+        # First get: None (cache miss), second get: same data
+        mock_redis.get.side_effect = [
+            None,
+            json.dumps(same_data),
+        ]
+        mock_redis.set.return_value = True
+
+        dfs = fetch.create_financial_data([ticker])
+        
+        assert isinstance(dfs, list), f"Expected list, got {type(dfs)}"
+        assert mock_redis.set.called, "Redis set should be called"
+        assert not mock_webhook.called, "Webhook should NOT be called when data unchanged"
