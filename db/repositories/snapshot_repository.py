@@ -13,7 +13,7 @@ class SnapshotRepository(BaseRepository):
     def create_snapshot(self, snapshot_data: Dict) -> int:
         """Insert financial snapshot"""
         query = f"""
-        INSERT INTO {self.table_name} (company_id,
+        INSERT INTO {self.table} (company_id,
         snapshot_date,
         marginal_tax_rate,
         last_annual_revenue,

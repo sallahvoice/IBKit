@@ -22,7 +22,7 @@ class CompanyRepository(BaseRepository):
         company = Company.create_company_from_dict(company_data)
         
         query = f"""
-            INSERT INTO {self.table_name} (ticker, name, incorporation, sector, market_cap)
+            INSERT INTO {self.table} (ticker, name, incorporation, sector, market_cap)
             VALUES (%s, %s, %s, %s, %s)
             ON DUPLICATE KEY UPDATE
             name = VALUES(name),

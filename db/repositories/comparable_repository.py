@@ -12,7 +12,7 @@ class ComparableRepository(BaseRepository):
     def create_comparable(self, comp_data: Dict) -> int:
         """Store a comparable company's multiples"""
         query = f"""
-            INSERT INTO {self.table_name} (
+            INSERT INTO {self.table} (
                 ticker,
                 name,
                 forward_price_to_book,
