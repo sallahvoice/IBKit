@@ -9,6 +9,9 @@ class BaseRepository:
         self.table = table_name
 
     def create(self, data):
+        if not data:
+            raise ValueError("No data provided")
+        
         columns = ", ".join(data.keys())
         placeholders = ", ".join(["%s"] * len(data))
         query = f"INSERT INTO {self.table} ({columns}) VALUES ({placeholders})"
