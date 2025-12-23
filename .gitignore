@@ -8,3 +8,5 @@ __pycache__/
 .functions_cache
 
 *.log
+.pytest_cache/
+.vscode/
