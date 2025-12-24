@@ -11,7 +11,7 @@ except ImportError:
 def main():
     """Parse arguments and create a company from ticker."""
     ap = argparse.ArgumentParser()
-    ap.add_argument("-t", "--ticker", type=str, help="company ticker")
+    ap.add_argument("-t", "--ticker", type=str, required=True, help="company ticker")
     args = ap.parse_args()
     if Company and args.ticker:
         Company.create_company_from_ticker(args.ticker)
