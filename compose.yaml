@@ -1,8 +1,24 @@
 services:
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: ibkit
+    ports:
+      - "3306:3306"
+
   ibkit:
-    image: ibkit
     build:
       context: .
       dockerfile: ./Dockerfile
+    depends_on:
+      - db
     ports:
-      - 8000:8000
+      - "8000:8000"
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: example
+      DB_NAME: ibkit
+    entrypoint: ["./wait-for-db.sh", "db", "gunicorn", "-k", "uvicorn.workers.UvicornWorker", "backend.api.health:app"]
