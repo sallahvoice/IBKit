@@ -6,3 +6,4 @@ this application is meant to simulate what an investement banker will do to crea
 5. store in db & filter out edge cases
 6. provide extra data (statistical analysis, volatility analysis, complementary data).
 7. dev tools for testing are available to install
+![Example](images/illustration.png)
