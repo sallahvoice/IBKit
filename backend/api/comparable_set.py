@@ -1,5 +1,3 @@
-from typing import Dict
-
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 

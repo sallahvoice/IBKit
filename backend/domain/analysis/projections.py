@@ -7,8 +7,11 @@ if TYPE_CHECKING:
     from backend.domain.financials.models import FinancialSnapshot, TwoStageGrowthParams
 
 from backend.domain.company import Company
-from backend.utils.converge import (converge_growth, project_other_line_items,
-                                    project_revenue)
+from backend.utils.converge import (
+    converge_growth,
+    project_other_line_items,
+    project_revenue,
+)
 
 Percent = float
 Money = Union[float, int]

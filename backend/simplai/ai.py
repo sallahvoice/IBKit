@@ -18,17 +18,18 @@ model = genai.GenerativeModel(model_name="gemini-2.5-flash")
 
 
 def extract_info_gemini(df, user_prompt):
-    text_csv = df.to_csv(index=false)
+    text_csv = df.to_csv(index=False)
+
     prompt = f"""i will provide you with financial data for a certain
     publicly traded company in a csv format.
     csv: {text_csv}
     now answer this:
     {user_prompt}
-
     only give precise & relevant part."""
 
     try:
-        response = model.generate_content(user_prompt)
+        response = model.generate_content(prompt)
         return response.text.strip()
     except Exception as e:
-        logger.info(f"[gemini error] {e}")
+        logger.error(f"[gemini error] {e}")
+        return "An error occurred while processing the data."

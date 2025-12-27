@@ -1,4 +1,5 @@
-"""repository file that defines a base class with crud methods that is inherited in other files classes"""
+"""repository file that defines a base class with crud methods
+that is inherited in other files classes"""
 
 from db.database import database
 

@@ -1,5 +1,5 @@
 import redis
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request, status
+from fastapi import FastAPI
 
 from db.database import database
 
@@ -16,7 +16,7 @@ sample = {
 app.get("/health/")
 
 
-def health(test):
+def health():
     try:
         database.create_company(sample)
         redis_status = redis.ping()

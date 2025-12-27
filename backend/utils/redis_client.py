@@ -4,7 +4,6 @@ import redis
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 
-from backend.utils.decorators import retry
 from backend.utils.logger import get_logger
 
 load_dotenv()
@@ -50,11 +49,11 @@ async def expire_cache(request: Request):
                 "status": "success",
                 "message": f"Successfully deleted cache key: {cache_key}",
             }
-        else:
-            return {
-                "status": "warning",
-                "message": f"Failed to delete cache key: {cache_key}",
-            }
+
+        return {
+            "status": "warning",
+            "message": f"Failed to delete cache key: {cache_key}",
+        }
     except redis.RedisError as e:
         logger.exception("Cache expiry error: %s", e)
         return {"status": "error", "message": f"Cache expiry failed: {str(e)}"}

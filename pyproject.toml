@@ -18,3 +18,11 @@ dependencies = [
     "uvicorn>=0.37.0",
     "yfinance>=0.2.66",
 ]
+
+[tool.pylint.master]
+init-hook = 'import sys; sys.path.append(".")'
+
+[tool.pylint.messages_control]
+
+[tool.pylint.format]
+max-line-length = 100

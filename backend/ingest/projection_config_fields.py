@@ -1,4 +1,5 @@
-"""file that sets stable year assumptions, returns ProjectionConfig using default assumptions & two stage params"""
+"""file that sets stable year assumptions, returns
+ProjectionConfig using default assumptions & two stage params"""
 
 from backend.domain.analysis.projections import ProjectionConfig
 from backend.domain.financials.models import TwoStageGrowthParams
