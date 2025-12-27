@@ -1,5 +1,6 @@
 from backend.services.comparables_service import analyze_company
 
+
 def analyze_apple():
     result = analyze_company("AAPL")
 

@@ -1,3 +1,5 @@
+"""file that contains Company class with its attributes & dunder methodes (__repr__, __hash--) & other property function for validation ..."""
+
 from typing import Dict
 
 
@@ -60,13 +62,15 @@ class Company:
     @property
     def is_complete(self) -> bool:
         """Check if all attributes are set (not None or falsy)."""
-        return all([
-            self.name,
-            self.ticker,
-            self.incorporation,
-            self.sector,
-            self.market_cap,
-        ])
+        return all(
+            [
+                self.name,
+                self.ticker,
+                self.incorporation,
+                self.sector,
+                self.market_cap,
+            ]
+        )
 
     @property
     def market_cap_category(self) -> str:

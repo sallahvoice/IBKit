@@ -1,9 +1,9 @@
 import time
-from backend.utils.logger import get_logger
 from contextlib import contextmanager
-import mysql.connector
+
 from mysql.connector import Error
 
+from backend.utils.logger import get_logger
 
 logger = get_logger(__file__)
 
@@ -21,7 +21,7 @@ class DatabaseConnection:
             conn = self.pool.get_connection()
             yield conn
             conn.commit()
-        except mysql.connector.Error as e:
+        except Error as e:
             if conn:
                 conn.rollback()
             logger.info(f"Database error : {e}")
@@ -39,7 +39,7 @@ class DatabaseConnection:
                 yield cursor
             finally:
                 cursor.close()
-            
+
     @contextmanager
     def get_cursor_with_logging(self, dictionary=True):
         """Context manager with slow query logging"""

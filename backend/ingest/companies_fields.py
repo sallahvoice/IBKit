@@ -1,5 +1,9 @@
+"""a file that helps fetch financial information about a list of tickers"""
+
 from typing import List
+
 import yfinance as yf
+
 
 def create_companies_fields(tickers: List[str]) -> List[dict]:
     """
@@ -14,9 +18,11 @@ def create_companies_fields(tickers: List[str]) -> List[dict]:
         company_field = {
             "ticker": ticker,
             "name": info.get("longName"),
-            "incorporation": info.get("incorporation"), #returns None (not provided via yf api)
+            "incorporation": info.get(
+                "incorporation"
+            ),  # returns None (not provided via yf api)
             "sector": info.get("sector"),
-            "market_cap": info.get("marketcap")
+            "market_cap": info.get("marketcap"),
         }
         companies_fields.append(company_field)
     return companies_fields

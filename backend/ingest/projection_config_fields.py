@@ -1,6 +1,7 @@
+"""file that sets stable year assumptions, returns ProjectionConfig using default assumptions & two stage params"""
+
 from backend.domain.analysis.projections import ProjectionConfig
 from backend.domain.financials.models import TwoStageGrowthParams
-from decimal import Decimal
 
 # Default stable year assumptions
 DEFAULT_STABLE_EBIT_MARGIN = 0.20
@@ -16,7 +17,7 @@ def create_projection_config(
     stable_capex_pct: float = DEFAULT_STABLE_CAPEX_PCT,
     stable_wc_change_pct: float = DEFAULT_STABLE_WC_CHANGE_PCT,
     stable_da_pct: float = DEFAULT_STABLE_DA_PCT,
-    stable_net_income_margin: float = DEFAULT_STABLE_NET_INCOME_MARGIN
+    stable_net_income_margin: float = DEFAULT_STABLE_NET_INCOME_MARGIN,
 ) -> ProjectionConfig:
     """
     Create ProjectionConfig with stable year assumptions.
@@ -25,14 +26,14 @@ def create_projection_config(
     # Get stable growth rate from params (will use GDP growth or override)
     stable_growth = two_stage_params.growth_rate(
         snapshot=None,  # Not needed for stable stage with override
-        stage=two_stage_params.stable
+        stage=two_stage_params.stable,
     )
-    
+
     return ProjectionConfig(
         stable_year_revenue_growth=float(stable_growth),
         stable_year_ebit_percent_revenue=stable_ebit_margin,
         stable_year_capex_percent_revenue=stable_capex_pct,
         stable_year_chng_wc_percent_revenue=stable_wc_change_pct,
         stable_year_da_percent_revenue=stable_da_pct,
-        stable_year_net_income_percent_revenue=stable_net_income_margin
+        stable_year_net_income_percent_revenue=stable_net_income_margin,
     )

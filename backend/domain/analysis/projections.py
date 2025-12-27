@@ -1,18 +1,26 @@
-from dataclasses import dataclass, replace, asdict
-from typing import Union, List
+"""a file that uses multiple classes from other files & calculates multiple stats about a firm"""
+
+from dataclasses import asdict, dataclass, replace
+from typing import TYPE_CHECKING, List, Union
+
+if TYPE_CHECKING:
+    from backend.domain.financials.models import FinancialSnapshot, TwoStageGrowthParams
+
 from backend.domain.company import Company
-from backend.domain.financials.models import FinancialSnapshot, StageParams, TwoStageGrowthParams
-from backend.utils.converge import project_revenue, project_other_line_items, converge_growth
+from backend.utils.converge import (converge_growth, project_other_line_items,
+                                    project_revenue)
 
 Percent = float
 Money = Union[float, int]
 Multiple = float
+
 
 @dataclass(frozen=True, slots=True)
 class ProjectionConfig:
     """
     Configuration for projecting financial line items as percentages of revenue.
     """
+
     stable_year_revenue_growth: Percent
     stable_year_ebit_percent_revenue: Percent = 0.20
     stable_year_capex_percent_revenue: Percent = 0.07
@@ -22,16 +30,16 @@ class ProjectionConfig:
 
     @classmethod
     def from_growth_params(
-        cls,
-        params: TwoStageGrowthParams,
-        **overrides
+        cls, params: TwoStageGrowthParams, **overrides
     ) -> "ProjectionConfig":
         """
         Create a ProjectionConfig from growth parameters,
         allowing selective overrides for other assumptions.
         """
         base = cls(stable_year_revenue_growth=params.growth_rate)
-        normalized_dict = {k: (v / 100 if isinstance(v, int) else v) for k, v in overrides.items()}
+        normalized_dict = {
+            k: (v / 100 if isinstance(v, int) else v) for k, v in overrides.items()
+        }
         return replace(base, **normalized_dict)
 
     def __post_init__(self) -> None:
@@ -53,7 +61,9 @@ class ProjectionConfig:
         """
         Return the configuration as a dictionary of percentages.
         """
-        return {k: (v / 100 if isinstance(v, int) else v) for k, v in asdict(self).items()}
+        return {
+            k: (v / 100 if isinstance(v, int) else v) for k, v in asdict(self).items()
+        }
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -61,6 +71,7 @@ class ProjectionResult:
     """
     Holds the projected financial line items for each year.
     """
+
     revenues: List[Money]
     ebit: List[Money]
     capex: List[Money]
@@ -68,39 +79,40 @@ class ProjectionResult:
     da: List[Money]
     net_income: List[Money]
 
+
 def build_projections(
-    base_revenue: FinancialSnapshot,
-    assumptions: ProjectionConfig,
-    params,
-    years: int
+    base_revenue: FinancialSnapshot, assumptions: ProjectionConfig, params, years: int
 ) -> ProjectionResult:
     """
     Build financial projections for a given number of years using provided assumptions.
     """
     growths = converge_growth(
-        params.growth_rate,
-        assumptions.stable_year_revenue_growth,
-        years
+        params.growth_rate, assumptions.stable_year_revenue_growth, years
     )
     revenues = project_revenue(base_revenue.last_annual_revenue, growths)
-    ebit = project_other_line_items(revenues, assumptions.stable_year_ebit_percent_revenue)
-    capex = project_other_line_items(revenues, assumptions.stable_year_capex_percent_revenue)
-    wc = project_other_line_items(revenues, assumptions.stable_year_chng_wc_percent_revenue)
+    ebit = project_other_line_items(
+        revenues, assumptions.stable_year_ebit_percent_revenue
+    )
+    capex = project_other_line_items(
+        revenues, assumptions.stable_year_capex_percent_revenue
+    )
+    wc = project_other_line_items(
+        revenues, assumptions.stable_year_chng_wc_percent_revenue
+    )
     da = project_other_line_items(revenues, assumptions.stable_year_da_percent_revenue)
-    net_income = project_other_line_items(revenues, assumptions.stable_year_net_income_percent_revenue)
+    net_income = project_other_line_items(
+        revenues, assumptions.stable_year_net_income_percent_revenue
+    )
 
     return ProjectionResult(
-        revenues=revenues,
-        ebit=ebit,
-        capex=capex,
-        wc=wc,
-        da=da,
-        net_income=net_income
+        revenues=revenues, ebit=ebit, capex=capex, wc=wc, da=da, net_income=net_income
     )
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class CompanyInputsHolder:
+    """class with growth & stable stage attributes, builds attributes & returns cls with the proper attr values"""
+
     # --- Company identifiers ---
     ticker: str
     name: str
@@ -154,43 +166,40 @@ class CompanyInputsHolder:
         params: "TwoStageGrowthParams",
         projected: "ProjectionResult",
     ) -> "CompanyInputsHolder":
-        
+
         # Pre-calculate growth rates
         first_stage_growth = params.growth_rate(snapshot, params.growth)
         second_stage_growth = params.growth_rate(snapshot, params.stable)
-        
+
         # Pre-calculate costs of capital
         growth_wacc = params.wacc(params.growth, snapshot)
         stable_wacc = params.wacc(params.stable, snapshot)
         growth_cost_of_equity = params.cost_of_equity(params.growth)
         stable_cost_of_equity = params.cost_of_equity(params.stable)
-        
+
         # Calculate after-tax EBIT margin for growth stage
         avg_ebit = sum(projected.ebit[:-1]) / len(projected.ebit[:-1])
         avg_revenue = sum(projected.revenues[:-1]) / len(projected.revenues[:-1])
         growth_after_tax_ebit_margin = (
             avg_ebit * (1 - snapshot.marginal_tax_rate) / avg_revenue
         )
-        
+
         # Calculate FCFE as % of revenue (approximation)
         fcfe_pct_net_income = snapshot.fcfe_as_percent_net_income
         growth_fcfe_pct_rev = fcfe_pct_net_income * snapshot.profit_margin
-        
+
         return cls(
             # --- identifiers ---
             ticker=c.ticker,
             name=c.name,
             years=params.growth.years,
             shares=snapshot.current_shares_outstanding,
-
             # --- growth assumptions ---
             first_stage_growth=float(first_stage_growth),
             second_stage_growth=float(second_stage_growth),
-
             # --- fcfe assumptions ---
             growth_stage_fcfe_percent_rev=float(growth_fcfe_pct_rev),
             stable_stage_fcfe_percent_rev=assumptions.stable_year_net_income_percent_revenue,
-
             # --- discount rate components ---
             growth_stage_risk_free_rate=float(params.risk_free_rate),
             stable_stage_risk_free_rate=float(params.risk_free_rate),
@@ -198,33 +207,30 @@ class CompanyInputsHolder:
             stable_stage_equity_risk_premium=float(params.equity_risk_premium),
             growth_stage_beta=params.growth.beta,
             stable_stage_beta=params.stable.beta,
-
             # --- profitability assumptions ---
             growth_stage_profit_margin=float(snapshot.profit_margin),
             stable_stage_profit_margin=assumptions.stable_year_net_income_percent_revenue,
-            
             # --- after-tax EBIT margin ---
             growth_stage_after_tax_ebit_margin=float(growth_after_tax_ebit_margin),
-
             # --- cost of capital ---
             growth_stage_wacc=float(growth_wacc),
             stable_stage_wacc=float(stable_wacc),
             growth_stage_cost_of_equity=float(growth_cost_of_equity),
             stable_stage_cost_of_equity=float(stable_cost_of_equity),
-
             # --- reinvestment ---
             growth_stage_reinvestment_rate=float(snapshot.reinvestment_rate),
             stable_stage_reinvestment_rate=float(snapshot.reinvestment_rate),
-
             # --- forward EPS ---
             expected_next_year_net_income_per_share=(
                 projected.net_income[1] / snapshot.current_shares_outstanding
             ),
             expected_next_year_after_tax_ebit_per_share=(
-                projected.ebit[1] * (1 - snapshot.marginal_tax_rate) / 
-                snapshot.current_shares_outstanding
-            )
+                projected.ebit[1]
+                * (1 - snapshot.marginal_tax_rate)
+                / snapshot.current_shares_outstanding
+            ),
         )
+
 
 @dataclass(frozen=True, slots=True)
 class EquityMultiplesEngine:
@@ -235,29 +241,40 @@ class EquityMultiplesEngine:
 
     @staticmethod
     def growth_expected_roe(params: CompanyInputsHolder) -> Percent:
-        return params.growth_stage_profit_margin / (1 - params.growth_stage_fcfe_percent_rev)
+        return params.growth_stage_profit_margin / (
+            1 - params.growth_stage_fcfe_percent_rev
+        )
 
     @staticmethod
     def stable_expected_roe(params: CompanyInputsHolder) -> Percent:
-        return params.stable_stage_profit_margin / (1 - params.stable_stage_fcfe_percent_rev)
+        return params.stable_stage_profit_margin / (
+            1 - params.stable_stage_fcfe_percent_rev
+        )
 
     @staticmethod
     def book_value_of_equity(params: CompanyInputsHolder) -> Money:  # per share
-        return params.expected_next_year_net_income_per_share / params.first_stage_growth
+        return (
+            params.expected_next_year_net_income_per_share / params.first_stage_growth
+        )
 
     @staticmethod
     def expected_revenues_next_year(params: CompanyInputsHolder) -> Money:
-        return params.expected_next_year_net_income_per_share / params.growth_stage_profit_margin
+        return (
+            params.expected_next_year_net_income_per_share
+            / params.growth_stage_profit_margin
+        )
 
     @staticmethod
-    def value_of_equity(params: CompanyInputsHolder, info: TwoStageGrowthParams) -> Money:
+    def value_of_equity(
+        params: CompanyInputsHolder, info: TwoStageGrowthParams
+    ) -> Money:
         high_growth_times_bv_equity = (
-            params.first_stage_growth * 
-            EquityMultiplesEngine.book_value_of_equity(params)
+            params.first_stage_growth
+            * EquityMultiplesEngine.book_value_of_equity(params)
         )
         compound_first_stage_growth = (1 + params.first_stage_growth) ** params.years
         compound_second_stage_growth = (1 + params.second_stage_growth) ** params.years
-        
+
         # Use pre-calculated cost of equity from params
         growth_stage_discount_minus_growth = (
             params.growth_stage_cost_of_equity - params.first_stage_growth
@@ -265,11 +282,13 @@ class EquityMultiplesEngine:
         stable_stage_discount_minus_growth = (
             params.stable_stage_cost_of_equity - params.second_stage_growth
         )
-        
-        mod_compound_first_stage_growth = (1 + params.first_stage_growth) ** (params.years - 1)
-        stable_growth_time_payout = (
-            (1 + params.second_stage_growth) * params.stable_stage_fcfe_percent_rev
+
+        mod_compound_first_stage_growth = (1 + params.first_stage_growth) ** (
+            params.years - 1
         )
+        stable_growth_time_payout = (
+            1 + params.second_stage_growth
+        ) * params.stable_stage_fcfe_percent_rev
 
         return (
             high_growth_times_bv_equity
@@ -280,7 +299,9 @@ class EquityMultiplesEngine:
             high_growth_times_bv_equity
             * mod_compound_first_stage_growth
             * stable_growth_time_payout
-        ) / (stable_stage_discount_minus_growth * compound_second_stage_growth)
+        ) / (
+            stable_stage_discount_minus_growth * compound_second_stage_growth
+        )
 
     @staticmethod
     def forward_pe(params: CompanyInputsHolder, info: TwoStageGrowthParams) -> Multiple:
@@ -288,16 +309,24 @@ class EquityMultiplesEngine:
         return params.expected_next_year_net_income_per_share / _value_of_equity
 
     @staticmethod
-    def price_to_book(params: CompanyInputsHolder, info: TwoStageGrowthParams) -> Multiple:
+    def price_to_book(
+        params: CompanyInputsHolder, info: TwoStageGrowthParams
+    ) -> Multiple:
         _value_of_equity = EquityMultiplesEngine.value_of_equity(params, info)
         _book_value = EquityMultiplesEngine.book_value_of_equity(params)
         return _value_of_equity / _book_value
 
     @staticmethod
-    def forward_price_to_sales(params: CompanyInputsHolder, info: TwoStageGrowthParams) -> Multiple:
+    def forward_price_to_sales(
+        params: CompanyInputsHolder, info: TwoStageGrowthParams
+    ) -> Multiple:
         forward_pe_ratio = EquityMultiplesEngine.forward_pe(params, info)
-        expected_rev_next_year = EquityMultiplesEngine.expected_revenues_next_year(params)
-        return forward_pe_ratio * (params.expected_next_year_net_income_per_share / expected_rev_next_year)
+        expected_rev_next_year = EquityMultiplesEngine.expected_revenues_next_year(
+            params
+        )
+        return forward_pe_ratio * (
+            params.expected_next_year_net_income_per_share / expected_rev_next_year
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -316,14 +345,21 @@ class FirmMultiplesEngine:
 
     @staticmethod
     def enterprise_value(params: CompanyInputsHolder) -> Money:  # per share
-        _ebit_after_reinvestment = params.expected_next_year_after_tax_ebit_per_share * (
-            1 - params.growth_stage_reinvestment_rate
+        _ebit_after_reinvestment = (
+            params.expected_next_year_after_tax_ebit_per_share
+            * (1 - params.growth_stage_reinvestment_rate)
         )
         _compound_first_stage_growth = (1 + params.first_stage_growth) ** params.years
         _compound_growth_stage_wacc = (1 + params.growth_stage_wacc) ** params.years
-        _growth_stage_wacc_minus_growth = params.growth_stage_wacc - params.first_stage_growth
-        _stable_stage_wacc_minus_growth = params.stable_stage_wacc - params.second_stage_growth
-        _mod_compound_first_stage_growth = (1 + params.first_stage_growth) ** (params.years - 1)
+        _growth_stage_wacc_minus_growth = (
+            params.growth_stage_wacc - params.first_stage_growth
+        )
+        _stable_stage_wacc_minus_growth = (
+            params.stable_stage_wacc - params.second_stage_growth
+        )
+        _mod_compound_first_stage_growth = (1 + params.first_stage_growth) ** (
+            params.years - 1
+        )
         _stable_growth_minus_reinvestment = (1 + params.second_stage_growth) * (
             1 - params.stable_stage_reinvestment_rate
         )
@@ -336,18 +372,26 @@ class FirmMultiplesEngine:
             params.expected_next_year_after_tax_ebit_per_share
             * _mod_compound_first_stage_growth
             * _stable_growth_minus_reinvestment
-        ) / (_stable_stage_wacc_minus_growth * _compound_growth_stage_wacc)
+        ) / (
+            _stable_stage_wacc_minus_growth * _compound_growth_stage_wacc
+        )
 
     # ---------------- EV/EBIT ----------------
 
     @staticmethod
-    def forward_ev_over_ebit(snapshot: FinancialSnapshot, params: CompanyInputsHolder) -> Multiple:
+    def forward_ev_over_ebit(
+        snapshot: FinancialSnapshot, params: CompanyInputsHolder
+    ) -> Multiple:
         _enterprise_value = FirmMultiplesEngine.enterprise_value(params)
-        _ebit_before_tax = params.expected_next_year_after_tax_ebit_per_share / (1 - snapshot.marginal_tax_rate)
+        _ebit_before_tax = params.expected_next_year_after_tax_ebit_per_share / (
+            1 - snapshot.marginal_tax_rate
+        )
         return _enterprise_value / _ebit_before_tax
 
     @staticmethod
-    def trailing_ev_over_ebit(snapshot: FinancialSnapshot, params: CompanyInputsHolder) -> Multiple:
+    def trailing_ev_over_ebit(
+        snapshot: FinancialSnapshot, params: CompanyInputsHolder
+    ) -> Multiple:
         _forward = FirmMultiplesEngine.forward_ev_over_ebit(snapshot, params)
         return _forward * (1 + params.first_stage_growth)
 
@@ -357,8 +401,8 @@ class FirmMultiplesEngine:
     def forward_ev_over_sales(params: CompanyInputsHolder) -> Multiple:
         _enterprise_value = FirmMultiplesEngine.enterprise_value(params)
         _expected_revenues_next_year = (
-            params.expected_next_year_after_tax_ebit_per_share / 
-            params.growth_stage_after_tax_ebit_margin
+            params.expected_next_year_after_tax_ebit_per_share
+            / params.growth_stage_after_tax_ebit_margin
         )
         return _enterprise_value / _expected_revenues_next_year
 
@@ -366,6 +410,3 @@ class FirmMultiplesEngine:
     def trailing_ev_over_sales(params: CompanyInputsHolder) -> Multiple:
         _forward = FirmMultiplesEngine.forward_ev_over_sales(params)
         return _forward / (1 + params.first_stage_growth)
-
-    
-

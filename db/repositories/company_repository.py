@@ -1,7 +1,8 @@
-from typing import Optional, Dict, List
-from db.repositories.base_repository import BaseRepository
-from db.database import database
+from typing import Dict, List, Optional
+
 from backend.domain.company import Company
+from db.database import database
+from db.repositories.base_repository import BaseRepository
 
 
 class CompanyRepository(BaseRepository):
@@ -9,18 +10,18 @@ class CompanyRepository(BaseRepository):
 
     def __init__(self):
         super().__init__("companies")
-    
+
     def create_company(self, company_data: Dict) -> int:
         """Create or update a company record in the database"""
-        
+
         company_ticker = Company.normalize_ticker(company_data.get("ticker"))
         if not Company.is_valid_ticker(company_ticker):
             raise ValueError("Invalid ticker format")
-        
+
         # Update the dict with normalized ticker
         company_data["ticker"] = company_ticker
         company = Company.create_company_from_dict(company_data)
-        
+
         query = f"""
             INSERT INTO {self.table} (ticker, name, incorporation, sector, market_cap)
             VALUES (%s, %s, %s, %s, %s)
@@ -30,7 +31,7 @@ class CompanyRepository(BaseRepository):
             sector = VALUES(sector),
             market_cap = VALUES(market_cap)
         """
-        
+
         values = (
             company.ticker,
             company.name,
@@ -38,9 +39,9 @@ class CompanyRepository(BaseRepository):
             company.sector,
             company.market_cap,
         )
-        
+
         with database.get_cursor() as cursor:
-            cursor.execute(query, values)  
+            cursor.execute(query, values)
             return cursor.lastrowid
 
     def get_company_by_ticker(self, ticker: str) -> Optional[Dict]:
@@ -48,16 +49,16 @@ class CompanyRepository(BaseRepository):
         normalized_ticker = Company.normalize_ticker(ticker)
         query = "SELECT * FROM companies WHERE ticker = %s"
         with database.get_cursor() as cursor:
-            cursor.execute(query, (normalized_ticker,))  
+            cursor.execute(query, (normalized_ticker,))
             return cursor.fetchone()
-        
+
     def get_company_by_sector(self, sector: str) -> List[Dict]:
         """Fetch all companies by sector"""
         query = "SELECT * FROM companies WHERE sector = %s"
         with database.get_cursor() as cursor:
             cursor.execute(query, (sector,))
             return cursor.fetchall()
-    
+
     def get_company_by_id(self, company_id: int) -> Optional[Dict]:
         """Fetch a company record by its ID"""
         query = "SELECT * FROM companies WHERE id = %s"

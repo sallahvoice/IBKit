@@ -1,9 +1,11 @@
 import os
+
 import redis
 from dotenv import load_dotenv
-from backend.utils.logger import get_logger
 from fastapi import FastAPI, Request
+
 from backend.utils.decorators import retry
+from backend.utils.logger import get_logger
 
 load_dotenv()
 app = FastAPI()
@@ -14,7 +16,7 @@ try:
         host=os.getenv("REDIS_HOST", "localhost"),
         port=int(os.getenv("REDIS_PORT", 6379)),
         db=int(os.getenv("REDIS_DB", 0)),
-        password=os.getenv("REDIS_PASSWORD", None)
+        password=os.getenv("REDIS_PASSWORD", None),
     )
     redis_client.ping()
     logger.info("Redis connection established")
@@ -44,12 +46,19 @@ async def expire_cache(request: Request):
         result = redis_client.delete(cache_key)
         if result:
             logger.info("Cache key '%s' expired successfully", cache_key)
-            return {"status": "success", "message": f"Successfully deleted cache key: {cache_key}"}
+            return {
+                "status": "success",
+                "message": f"Successfully deleted cache key: {cache_key}",
+            }
         else:
-            return {"status": "warning", "message": f"Failed to delete cache key: {cache_key}"}
+            return {
+                "status": "warning",
+                "message": f"Failed to delete cache key: {cache_key}",
+            }
     except redis.RedisError as e:
         logger.exception("Cache expiry error: %s", e)
         return {"status": "error", "message": f"Cache expiry failed: {str(e)}"}
+
 
 @app.get("/health/")
 def health():

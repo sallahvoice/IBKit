@@ -1,13 +1,14 @@
-from typing import Optional, Dict, List
-from db.repositories.base_repository import BaseRepository
+from typing import Dict, List, Optional
+
 from db.database import database
+from db.repositories.base_repository import BaseRepository
 
 
 class ComparableRepository(BaseRepository):
     """Repository for managing comparable companies multiples."""
 
     def __init__(self):
-        super().__init__("comparable_companies") 
+        super().__init__("comparable_companies")
 
     def create_comparable(self, comp_data: Dict) -> int:
         """Store a comparable company's multiples"""
@@ -33,7 +34,7 @@ class ComparableRepository(BaseRepository):
                 %(trailing_ev_to_sales)s
             )
         """
-        
+
         with database.get_cursor() as cursor:
             cursor.execute(query, comp_data)
             return cursor.lastrowid

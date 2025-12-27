@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+
 from db.repositories.company_repository import CompanyRepository
 
 company_repo = CompanyRepository()
 
 router = APIRouter(prefix="/company")
+
 
 class CompanyCreate(BaseModel):
     ticker: str
@@ -16,8 +18,7 @@ class CompanyCreate(BaseModel):
 
 @router.post("/")
 def create_company(
-    company: CompanyCreate, 
-    repo: CompanyRepository = Depends(lambda: company_repo)
+    company: CompanyCreate, repo: CompanyRepository = Depends(lambda: company_repo)
 ):
     """Create or update a company"""
     try:
@@ -29,8 +30,7 @@ def create_company(
 
 @router.get("/{ticker}")
 def get_company_by_ticker(
-    ticker: str,
-    repo: CompanyRepository = Depends(lambda: company_repo)
+    ticker: str, repo: CompanyRepository = Depends(lambda: company_repo)
 ):
     """Get company by ticker"""
     company = repo.get_company_by_ticker(ticker)
@@ -41,8 +41,7 @@ def get_company_by_ticker(
 
 @router.get("/sector/{sector}")
 def get_company_by_sector(
-    sector: str,
-    repo: CompanyRepository = Depends(lambda: company_repo)
+    sector: str, repo: CompanyRepository = Depends(lambda: company_repo)
 ):
     """Get all companies in a sector"""
     companies = repo.get_company_by_sector(sector)

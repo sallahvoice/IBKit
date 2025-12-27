@@ -5,17 +5,20 @@ dedicated to the user target company (the company being analyzed).
 
 try:
     import datetime as dt
-    import matplotlib.pyplot as plt
-    from matplotlib.figure import Figure as MPLFigure
-    import plotly.graph_objects as go
-    from plotly.graph_objs import Figure as PlotlyFigure
-    import yfinance as yf
     from typing import Dict, Union
+
+    import matplotlib.pyplot as plt
+    import plotly.graph_objects as go
+    import yfinance as yf
+    from matplotlib.figure import Figure as MPLFigure
+    from plotly.graph_objs import Figure as PlotlyFigure
 except ImportError as e:
     raise ImportError(f"failed to import libraries in {__file__}") from e
 
 
-def graph_target_ticker_price_vol(target_company_ticker: str, timeframe: str) -> Dict[str, PlotlyFigure]:
+def graph_target_ticker_price_vol(
+    target_company_ticker: str, timeframe: str
+) -> Dict[str, PlotlyFigure]:
     """User target company graph: price + volume (Plotly)"""
     if not target_company_ticker:
         return {}
@@ -79,7 +82,9 @@ def graph_target_ticker_price_vol(target_company_ticker: str, timeframe: str) ->
     return {target_company_ticker: fig}
 
 
-def graph_target_ticker_basic_stats(target_company_ticker: str, timeframe: str) -> Dict[str, MPLFigure]:
+def graph_target_ticker_basic_stats(
+    target_company_ticker: str, timeframe: str
+) -> Dict[str, MPLFigure]:
     """User target company stats: simple summary table (Matplotlib)"""
     if not target_company_ticker:
         return {}
@@ -110,7 +115,7 @@ def graph_target_ticker_basic_stats(target_company_ticker: str, timeframe: str) 
         colLabels=[f"{target_company_ticker} ({timeframe})"],
         cellLoc="center",
         loc="center",
-        colWidths=[0.3]
+        colWidths=[0.3],
     )
 
     table.auto_set_font_size(False)

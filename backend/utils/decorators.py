@@ -9,6 +9,7 @@ from pathlib import Path
 
 def timing(func):
     """Time function execution."""
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         start = time.perf_counter()
@@ -16,6 +17,7 @@ def timing(func):
         end = time.perf_counter()
         print(f"{func.__name__} took {(end - start) * 1000:.4f} ms to execute")
         return result
+
     return wrapper
 
 
@@ -25,8 +27,9 @@ def default_key(args, kwargs):
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
-def disk_cache(ttl: int =86400, namespace: str ="default", key_fn=None):
+def disk_cache(ttl: int = 86400, namespace: str = "default", key_fn=None):
     """Cache function results to disk with TTL."""
+
     def decorator(func):
         cache_dir = Path.cwd() / ".functions_cache" / namespace
         cache_dir.mkdir(parents=True, exist_ok=True)
@@ -36,26 +39,27 @@ def disk_cache(ttl: int =86400, namespace: str ="default", key_fn=None):
             key = (key_fn or default_key)(args, kwargs)
             cache_file = cache_dir / f"{key}.json"
             # Check if cached result exists and is not expired
-            if (
-                cache_file.exists()
-                and time.time() - cache_file.stat().st_mtime < ttl
-            ):
-                with open(cache_file, encoding='utf-8') as file:
+            if cache_file.exists() and time.time() - cache_file.stat().st_mtime < ttl:
+                with open(cache_file, encoding="utf-8") as file:
                     return json.load(file)
             # Execute original function and cache result
             result = func(*args, **kwargs)
-            with open(cache_file, "w", encoding='utf-8') as file:
+            with open(cache_file, "w", encoding="utf-8") as file:
                 json.dump(result, file)
             return result
+
         return wrapper
+
     return decorator
 
 
 class RetryErrror(Exception):
     """Exception raised when all retry attempts are exhausted."""
 
-def retry(max_attempts: int =3, delay: float =1.0, backoff_factor: float =2.0):
+
+def retry(max_attempts: int = 3, delay: float = 1.0, backoff_factor: float = 2.0):
     """Retry function on exception with exponential backoff."""
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -74,7 +78,9 @@ def retry(max_attempts: int =3, delay: float =1.0, backoff_factor: float =2.0):
                         current_delay *= backoff_factor
 
             raise RetryErrror(last_exception) from None
+
         return wrapper
+
     return decorator
 
 
@@ -86,4 +92,5 @@ def singleton(cls):
         if cls not in instances:
             instances[cls] = cls(*args, **kwargs)
         return instances[cls]
+
     return wrapper

@@ -5,21 +5,20 @@ Financial data fetching and analysis module.
 import json
 import os
 from io import BytesIO
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 import pandas as pd
 import requests
 import yfinance as yf
 from dotenv import load_dotenv
 
-
 try:
     from backend.domain.comparables import ComparableSet
+    from backend.ingest.webhook import notify_cache_expiry
     from backend.simplai.ai import extract_info_gemini
     from backend.utils.decorators import retry
     from backend.utils.logger import get_logger
     from backend.utils.redis_client import redis_client
-    from backend.ingest.webhook import notify_cache_expiry
 except ImportError as e:
     print("IMPORT ERROR IN fetch.py:", e)
     raise
@@ -164,7 +163,9 @@ def screener(
 
 
 @retry()
-def create_financial_data(tickers: List[str]) -> List[pd.DataFrame]: #target company+screener tickers
+def create_financial_data(
+    tickers: List[str],
+) -> List[pd.DataFrame]:  # target company+screener tickers
     """Fetch financial data with ticker-level caching and smart comparison"""
     if not api_key:
         return []
@@ -251,7 +252,7 @@ def create_financial_data(tickers: List[str]) -> List[pd.DataFrame]: #target com
                         if old_cached_data:
                             old_data = json.loads(old_cached_data)
                             # Use sophisticated comparison instead of simple JSON comparison
-                            if not compare_ticker_data(ticker_data, old_data): 
+                            if not compare_ticker_data(ticker_data, old_data):
                                 should_notify = True
                         else:
                             should_notify = True  # First time caching this ticker
@@ -343,8 +344,8 @@ def convert_to_dollars(dfs: List[pd.DataFrame]) -> List[pd.DataFrame]:
             # fetch conversion ratio
             try:
                 currancy_url = (
-                f"{CURRANCY_URL}/convert?from={currency}&to=USD"
-                f"&amount=1&api_key={currancy_api_key}"
+                    f"{CURRANCY_URL}/convert?from={currency}&to=USD"
+                    f"&amount=1&api_key={currancy_api_key}"
                 )
 
                 response = requests.get(currancy_url, timeout=4)
@@ -470,7 +471,7 @@ def run_financial_analysis(user_prompt: Optional[str] = None) -> Optional[dict]:
 
 
 if __name__ == "__main__":
-    
+
     main_results = run_financial_analysis(
         user_prompt="What revenue trends can you spot across these companies?"
     )

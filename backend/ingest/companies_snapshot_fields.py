@@ -1,35 +1,54 @@
-from typing import List
-import yfinance as yf
-import pandas as pd
-from pandas import DataFrame
+"""this file organizes firms data (ebit, sales...), some data is only for the target company we are analyzing"""
 
-def create_companies_snapshot_fields(dfs: List[pd.DataFrame]): #needs revision
+from typing import TYPE_CHECKING, List
+
+import pandas as pd
+
+from backend.utils.logger import get_logger
+
+if TYPE_CHECKING:
+    from pandas import DataFrame
+
+import yfinance as yf
+
+logger = get_logger(__file__)
+
+
+def create_companies_snapshot_fields(dfs: List[pd.DataFrame]):  # needs revision
+    """funcyion that handles target company ticker, its data, handles data per statement type & ticker.."""
     snapshots = {}
     target_company_ticker = dfs[0]["ticker"].iloc[0]
 
-    #for target company only 
+    # for target company only
     snapshots[0][target_company_ticker]["trailing_sales"] = None
     snapshots[0][target_company_ticker]["trailing_ebit"] = None
     yf_ticker = yf.Ticker(target_company_ticker)
-        #check if this method is actually available + are those fields valid
+    # check if this method is actually available + are those fields valid
     try:
         quartrly_inc = yf_ticker.financials
         if "Total Revenue" in quartrly_inc.index:
-            snapshots[0][target_company_ticker]["trailing_sales"] = quartrly_inc.loc["total Revenue"].iloc[:4].sum()
+            snapshots[0][target_company_ticker]["trailing_sales"] = (
+                quartrly_inc.loc["total Revenue"].iloc[:4].sum()
+            )
 
             for key in ["Operating Income", "Ebit", "EBIT"]:
                 if key in quartrly_inc.index:
-                    snapshots[0][target_company_ticker]["trailing_ebit"] = quartrly_inc.loc[key].iloc[:4].sum()
+                    snapshots[0][target_company_ticker]["trailing_ebit"] = (
+                        quartrly_inc.loc[key].iloc[:4].sum()
+                    )
                     break
-    except Exception:
-        pass
-            
-    if (snapshots[ticker]["trailing_sales"] or snapshots[ticker]["trailing_ebit"]) == None:
+    except Exception as e:
+        logger.error(f"Error fetching financials for {target_company_ticker}: {e}")
+
+    if (
+        snapshots[ticker]["trailing_sales"] or snapshots[ticker]["trailing_ebit"]
+    ) is None:
         snapshots[ticker]["trailing_sales"] = latest.get("revenue")
         snapshots[ticker]["trailing_ebit"] = latest.get("ebit")
 
-    snapshots[0][target_company_ticker]["last_annual_cash"] = latest.get("cashAndShortTermInvestments") #needed for target company only
-    
+    snapshots[0][target_company_ticker]["last_annual_cash"] = latest.get(
+        "cashAndShortTermInvestments"
+    )  # needed for target company only
 
     for df in dfs:
         ticker = df["ticker"].iloc[0]
@@ -43,31 +62,38 @@ def create_companies_snapshot_fields(dfs: List[pd.DataFrame]): #needs revision
 
         latest = df.iloc[0].to_dict()
 
-        snapshots[ticker]["marginal_tax_rate"] = 0.21 #make it dynamic if possible
+        snapshots[ticker]["marginal_tax_rate"] = 0.21  # make it dynamic if possible
 
         if stmt_type == "income_statement":
             snapshots[ticker]["last_annual_revenue"] = latest.get("revenue")
             snapshots[ticker]["last_annual_ebit"] = latest.get("ebit")
             snapshots[ticker]["last_annual_net_income"] = latest.get("netIncome")
-            snapshots[ticker]["last_annual_interest_expense"] = latest.get("interestExpense")
+            snapshots[ticker]["last_annual_interest_expense"] = latest.get(
+                "interestExpense"
+            )
             snapshots[ticker]["last_annual_tax_paid"] = latest.get("incomeTaxExpense")
-
-
 
         elif stmt_type == "balance-sheet-statement":
             snapshots[ticker]["last_annual_debt"] = latest.get("totalDebt")
-            
+
             snapshots[ticker]["last_annual_equity"] = latest.get("totalEquity")
 
-
         elif stmt_type == "cash-flow-statement":
-            snapshots[ticker]["last_annual_capex"] = latest.get("capitalExpenditure") #negative
-            snapshots[ticker]["last_annual_chng_wc"] = latest.get("changeInWorkingCapital")
-            snapshots[ticker]["last_annual_da"] = latest.get("depreciationAndAmortization")
+            snapshots[ticker]["last_annual_capex"] = latest.get(
+                "capitalExpenditure"
+            )  # negative
+            snapshots[ticker]["last_annual_chng_wc"] = latest.get(
+                "changeInWorkingCapital"
+            )
+            snapshots[ticker]["last_annual_da"] = latest.get(
+                "depreciationAndAmortization"
+            )
 
         else:
             snapshots[ticker]["market_cap"] = info.get("marketCap")
-            snapshots[ticker]["current_shares_outstanding"] = info.get("sharesOutstanding")
+            snapshots[ticker]["current_shares_outstanding"] = info.get(
+                "sharesOutstanding"
+            )
             snapshots[ticker]["current_beta"] = info.get("beta")
 
     return snapshots

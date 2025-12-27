@@ -1,6 +1,9 @@
-import mysql.connector
+"""db migration resources (cursor, connection)"""
+
 import os
 from pathlib import Path
+
+import mysql.connector
 
 
 def run_migrations():
@@ -9,17 +12,17 @@ def run_migrations():
     """
     conn = mysql.connector.connect(
         host=os.getenv("DB_HOST"),
-        port=os.getenv("DB_PORT"),
+        port=int(os.getenv("DB_PORT", "3306")),
         user=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD"),
-        database=os.getenv("DB_NAME")
+        database=os.getenv("DB_NAME"),
     )
 
     cursor = conn.cursor()
 
     migrations_dir = Path(__file__).parent / "migrations"
     for sql_file in sorted(migrations_dir.glob("*.sql")):
-        with open(sql_file) as f:
+        with open(sql_file, encoding="utf-8") as f:
             sql_statements = f.read()
             for result in cursor.execute(sql_statements, multi=True):
                 if result.with_rows:
@@ -27,6 +30,7 @@ def run_migrations():
     conn.commit()
     cursor.close()
     conn.close()
+
 
 if __name__ == "__main__":
     run_migrations()

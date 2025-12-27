@@ -1,20 +1,20 @@
 """statistical tests on the analyzed firm"""
 
 try:
-    import os
     import datetime as dt
-    import requests
+    import os
     from datetime import datetime
     from typing import Dict
-    from dotenv import load_dotenv
-    from utils.decorators import disk_cache
 
     import numpy as np
     import pandas as pd
     import plotly.graph_objects as go
-    from plotly.subplots import make_subplots
+    import requests
     import yfinance as yf
+    from dotenv import load_dotenv
+    from plotly.subplots import make_subplots
     from scipy.stats import gaussian_kde, norm
+    from utils.decorators import disk_cache
 except ImportError as e:
     raise ImportError(f"failed to import dependencies in {__file__}") from e
 
@@ -233,9 +233,7 @@ def stock_return_stat_tests(
 
 @disk_cache(namespace="polygon")
 def fetch_polygon_realized_vol(
-    target_company_ticker: str,
-    rolling_window: int,
-    api_key: str
+    target_company_ticker: str, rolling_window: int, api_key: str
 ) -> pd.Series:
     """
     Fetch realized volatility (annualized) from Polygon API.
@@ -252,12 +250,16 @@ def fetch_polygon_realized_vol(
         if "results" not in data:
             raise ValueError(f"No 'results' in Polygon response: {data}")
 
-        dates = [datetime.fromtimestamp(item["timestamp"] / 1000)
-                 for item in data["results"]]
+        dates = [
+            datetime.fromtimestamp(item["timestamp"] / 1000) for item in data["results"]
+        ]
         values = [float(item["value"]) for item in data["results"]]
 
-        return pd.Series(data=values, index=pd.to_datetime(dates),
-                        name=f"realized_{rolling_window}d_vol")
+        return pd.Series(
+            data=values,
+            index=pd.to_datetime(dates),
+            name=f"realized_{rolling_window}d_vol",
+        )
 
     except Exception as e:
         raise RuntimeError(
@@ -298,8 +300,8 @@ def rolling_and_implied_vol(
     df = yf.download(target_company_ticker, start=start, end=end)["Adj Close"]
     returns = df.pct_change().dropna()
 
-    sq_7d_dev = (returns - returns.rolling(window=7).mean())**2 * 252
-    sq_30d_dev = (returns - returns.rolling(window=30).mean())**2 * 252
+    sq_7d_dev = (returns - returns.rolling(window=7).mean()) ** 2 * 252
+    sq_30d_dev = (returns - returns.rolling(window=30).mean()) ** 2 * 252
 
     # Only fetch if API key is available
     realized_7d_vol = None
@@ -309,12 +311,12 @@ def rolling_and_implied_vol(
             realized_7d_vol = fetch_polygon_realized_vol(
                 target_company_ticker=target_company_ticker,
                 rolling_window=7,
-                api_key=polyapi
+                api_key=polyapi,
             )
             realized_30d_vol = fetch_polygon_realized_vol(
                 target_company_ticker=target_company_ticker,
                 rolling_window=30,
-                api_key=polyapi
+                api_key=polyapi,
             )
         except Exception:
             pass  # Continue without Polygon data
@@ -322,12 +324,10 @@ def rolling_and_implied_vol(
     returns = returns[30:]
 
     fig = make_subplots(
-        rows=1, cols=2,
-        subplot_titles=[
-            f"{target_company_ticker} Returns",
-            "Volatility Measures"
-        ],
-        horizontal_spacing=0.1
+        rows=1,
+        cols=2,
+        subplot_titles=[f"{target_company_ticker} Returns", "Volatility Measures"],
+        horizontal_spacing=0.1,
     )
 
     # Stock returns graph
@@ -338,10 +338,10 @@ def rolling_and_implied_vol(
             name="Returns",
             mode="lines",
             line={"color": "#FF00FF", "width": 1.5},
-            showlegend=True
+            showlegend=True,
         ),
         row=1,
-        col=1
+        col=1,
     )
 
     # Add Polygon data if available
@@ -353,10 +353,10 @@ def rolling_and_implied_vol(
                 name="7d Realized Vol",
                 mode="lines",
                 line={"color": "#00FF00", "width": 1.5},
-                showlegend=True
+                showlegend=True,
             ),
             row=1,
-            col=2
+            col=2,
         )
 
     if realized_30d_vol is not None:
@@ -367,10 +367,10 @@ def rolling_and_implied_vol(
                 name="30d Realized Vol",
                 mode="lines",
                 line={"color": "#39FF14", "width": 1.5},
-                showlegend=True
+                showlegend=True,
             ),
             row=1,
-            col=2
+            col=2,
         )
 
     fig.add_trace(
@@ -380,10 +380,10 @@ def rolling_and_implied_vol(
             name="30d rolling Vol",
             mode="lines",
             line={"color": "#FF10F0", "width": 1.5},
-            showlegend=True
+            showlegend=True,
         ),
         row=1,
-        col=2
+        col=2,
     )
 
     fig.add_trace(
@@ -393,10 +393,10 @@ def rolling_and_implied_vol(
             name="7d Rolling Vol",
             mode="lines",
             line={"color": "#FF3131", "width": 1.5},
-            showlegend=True
+            showlegend=True,
         ),
         row=1,
-        col=2
+        col=2,
     )
 
     fig.update_layout(
@@ -404,7 +404,7 @@ def rolling_and_implied_vol(
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         font={"color": "white", "size": 10},
-        margin={"l": 10, "r": 10, "t": 40, "b": 10}
+        margin={"l": 10, "r": 10, "t": 40, "b": 10},
     )
 
     for col in [1, 2]:
@@ -416,7 +416,7 @@ def rolling_and_implied_vol(
             zerolinewidth=1,
             zerolinecolor="rgba(128,128,128,0.5)",
             row=1,
-            col=col
+            col=col,
         )
 
         fig.update_yaxes(
@@ -428,7 +428,7 @@ def rolling_and_implied_vol(
             zerolinecolor="rgba(128,128,128,0.5)",
             title_text="Returns" if col == 1 else "Volatility",
             row=1,
-            col=col
+            col=col,
         )
 
     return {target_company_ticker: fig}

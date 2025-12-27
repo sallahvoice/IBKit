@@ -1,8 +1,8 @@
-from dataclasses import dataclass
-from typing import Optional, Dict
 from datetime import date
-from db.repositories.base_repository import BaseRepository
+from typing import Dict, Optional
+
 from db.database import database
+from db.repositories.base_repository import BaseRepository
 
 
 class SnapshotRepository(BaseRepository):
@@ -91,7 +91,6 @@ class SnapshotRepository(BaseRepository):
             cursor.execute(query, (snapshot_data))
             return cursor.lastrowid
 
-
     def get_latest_snapshot(self, company_id: int) -> Optional[Dict]:
         """Get most recent snapshot for a company"""
         query = """
@@ -104,10 +103,10 @@ class SnapshotRepository(BaseRepository):
         with database.get_cursor() as cursor:
             cursor.execute(query, (company_id,))
             return cursor.fetchone()
- 
 
-
-    def get_snapshot_by_date(self, company_id: int, snapshot_date: date) -> Optional[Dict]:
+    def get_snapshot_by_date(
+        self, company_id: int, snapshot_date: date
+    ) -> Optional[Dict]:
         """Get specific snapshot"""
         query = """
         SELECT * FROM financial_snapshots

@@ -1,10 +1,15 @@
 from typing import List
+
 from backend.utils.decorators import timing
+
 Percent = float
 Money = int
 
+
 @timing
-def converge_growth(start_growth: Percent, stable_growth: Percent, years: int) -> List[Percent]:
+def converge_growth(
+    start_growth: Percent, stable_growth: Percent, years: int
+) -> List[Percent]:
     """
     Gradually converges from start_growth to stable_growth over a number of years.
 
@@ -26,8 +31,11 @@ def converge_growth(start_growth: Percent, stable_growth: Percent, years: int) -
         growths.append(current)
     return growths
 
+
 @timing
-def project_revenue(last_annual_revenue: Money, growth_rates: List[Percent]) -> List[Money]:
+def project_revenue(
+    last_annual_revenue: Money, growth_rates: List[Percent]
+) -> List[Money]:
     """
     Projects future revenues based on initial revenue and a list of growth rates.
 
@@ -44,8 +52,11 @@ def project_revenue(last_annual_revenue: Money, growth_rates: List[Percent]) -> 
         revenues.append(new_revenue)
     return revenues
 
+
 @timing
-def project_other_line_items(revenues: List[Money], percentages: List[Percent]) -> List[Money]:
+def project_other_line_items(
+    revenues: List[Money], percentages: List[Percent]
+) -> List[Money]:
     """
     Projects other line items as a percentage of revenues.
 

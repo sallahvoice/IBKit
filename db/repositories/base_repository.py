@@ -1,4 +1,5 @@
-from typing import Optional, Dict, Any, List
+"""repository file that defines a base class with crud methods that is inherited in other files classes"""
+
 from db.database import database
 
 
@@ -11,7 +12,7 @@ class BaseRepository:
     def create(self, data):
         if not data:
             raise ValueError("No data provided")
-        
+
         columns = ", ".join(data.keys())
         placeholders = ", ".join(["%s"] * len(data))
         query = f"INSERT INTO {self.table} ({columns}) VALUES ({placeholders})"

@@ -1,17 +1,21 @@
 import redis
-from fastapi import FastAPI, Request,APIRouter, Depends, HTTPException, status
-from db.database import database 
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request, status
 
+from db.database import database
 
 app = FastAPI()
-sample = {"ticker": "AAPL",
-          "name": "Apple Inc.",
-          "incorporation": "USA",
-          "sector": "Technology",
-          "market_cap": 2000000000000}
+sample = {
+    "ticker": "AAPL",
+    "name": "Apple Inc.",
+    "incorporation": "USA",
+    "sector": "Technology",
+    "market_cap": 2000000000000,
+}
 
 
 app.get("/health/")
+
+
 def health(test):
     try:
         database.create_company(sample)

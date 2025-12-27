@@ -1,4 +1,5 @@
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,14 +9,12 @@ required_variables = [
     "CURRANCY-API-KEY",
     "POLYGON-API-KEY",
     "GEMINI-API-KEY",
-
     "DB_HOST",
     "DB_PORT",
     "DB-NAME",
     "DB-USER",
     "DB_PASSWORD",
     "DB_POOL_SIZE",
-
     "REDIS-HOST",
     "REDIS-PORT",
     "REDIS-DB",
