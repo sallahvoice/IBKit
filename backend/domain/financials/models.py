@@ -306,11 +306,11 @@ class TwoStageGrowthParams:
         if stage.stage == Stage.GROWTH:
             # Growth = ROIC × Reinvestment Rate
             return snapshot.roic * snapshot.reinvestment_rate
-        else:
-            # Stable growth = min(Risk-free rate, GDP growth) unless overridden
-            if stage.growth_rate_override is not None:
-                return stage.growth_rate_override
-            return min(self.risk_free_rate, self.gdp_growth)
+
+        # Stable growth = min(Risk-free rate, GDP growth) unless overridden
+        if stage.growth_rate_override is not None:
+            return stage.growth_rate_override
+        return min(self.risk_free_rate, self.gdp_growth)
 
 
 # Utility functions

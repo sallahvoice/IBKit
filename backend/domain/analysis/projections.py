@@ -116,7 +116,10 @@ def build_projections(
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class CompanyInputsHolder:
-    """class with growth & stable stage attributes, builds attributes & returns cls with the proper attr values"""
+    """
+    class with growth & stable stage attributes, builds attributes &
+    returns cls with the proper attr values
+    """
 
     # --- Company identifiers ---
     ticker: str

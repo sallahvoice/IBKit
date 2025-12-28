@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 """Tests for create_financial_data function with mocked redis_client, webhooks, and API responses"""
 
 import json

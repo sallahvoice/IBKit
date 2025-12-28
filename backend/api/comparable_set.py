@@ -11,6 +11,8 @@ router = APIRouter(prefix="/comparable")
 
 
 class ComparableSetCreate(BaseModel):
+    """class with comparable set shared attrs"""
+
     ticker: str
     name: str
     forward_price_to_book: float
@@ -32,7 +34,9 @@ def read_comparable(
     try:
         return {"id": comparable_id, "message": "Comparable company added successfully"}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e)) # pylint: disable=raise-missing-from
+        raise HTTPException(
+            status_code=400, detail=str(e)
+        )  # pylint: disable=raise-missing-from
 
 
 @router.get("/set/{set_id}")
@@ -43,7 +47,9 @@ def get_comparables_for_set(
     try:
         return {"set_id": set_id, "comparables": comparable}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(
+            status_code=400, detail=str(e)
+        )  # pylint: disable=raise-missing-from
 
 
 @router.get("/{ticker}")

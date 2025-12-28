@@ -1,3 +1,4 @@
+# pylint: disable=redefined-outer-name
 """file that test db repositories BaseRepository class behaviour"""
 
 from unittest.mock import MagicMock, patch
