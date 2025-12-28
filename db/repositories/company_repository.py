@@ -1,3 +1,5 @@
+"""repository for company data in a database"""
+
 from typing import Dict, List, Optional
 
 from backend.domain.company import Company
@@ -6,7 +8,7 @@ from db.repositories.base_repository import BaseRepository
 
 
 class CompanyRepository(BaseRepository):
-    """Repository for managing company records in the database"""
+    """class for managing company records in the database"""
 
     def __init__(self):
         super().__init__("companies")
@@ -14,11 +16,10 @@ class CompanyRepository(BaseRepository):
     def create_company(self, company_data: Dict) -> int:
         """Create or update a company record in the database"""
 
-        company_ticker = Company.normalize_ticker(company_data.get("ticker"))
+        company_ticker = company_data.get("ticker")
         if not Company.is_valid_ticker(company_ticker):
             raise ValueError("Invalid ticker format")
 
-        # Update the dict with normalized ticker
         company_data["ticker"] = company_ticker
         company = Company.create_company_from_dict(company_data)
 
@@ -46,7 +47,7 @@ class CompanyRepository(BaseRepository):
 
     def get_company_by_ticker(self, ticker: str) -> Optional[Dict]:
         """Fetch a company record by its ticker symbol"""
-        normalized_ticker = Company.normalize_ticker(ticker)
+        normalized_ticker = ticker.strip().upper().replace(" ", "")
         query = "SELECT * FROM companies WHERE ticker = %s"
         with database.get_cursor() as cursor:
             cursor.execute(query, (normalized_ticker,))

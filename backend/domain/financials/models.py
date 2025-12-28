@@ -1,4 +1,7 @@
-"""a file that contains FinancialSnapshot (a snapshot of a company & its data, revenue, ebit) & multiple property functions needed for our projections"""
+"""
+a file that contains FinancialSnapshot (a snapshot of a company & its data, revenue, ebit)
+& multiple property functions needed for our projections
+"""
 
 from dataclasses import asdict, dataclass
 from decimal import Decimal, getcontext

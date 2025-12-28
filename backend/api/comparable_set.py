@@ -1,7 +1,9 @@
+"""file that manages routes for comparable sets, get data by set id or ticker"""
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from db.repositories.comparable_repository import CompanyRepository
+from db.repositories.company_repository import CompanyRepository
 
 comparable_repo = CompanyRepository()
 
@@ -25,18 +27,18 @@ router.post("/")
 def read_comparable(
     comparable: ComparableSetCreate,
     repo: CompanyRepository = Depends(lambda: comparable_repo),
-):
+):  # pylint: disable=missing-function-docstring
     comparable_id = repo.create_comparable(comparable.dict())
     try:
         return {"id": comparable_id, "message": "Comparable company added successfully"}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) # pylint: disable=raise-missing-from
 
 
 @router.get("/set/{set_id}")
 def get_comparables_for_set(
     set_id: int, repo: CompanyRepository = Depends(lambda: comparable_repo)
-):
+):  # pylint: disable=missing-function-docstring
     comparable = repo.get_comparables_for_set(set_id)
     try:
         return {"set_id": set_id, "comparables": comparable}
@@ -47,7 +49,7 @@ def get_comparables_for_set(
 @router.get("/{ticker}")
 def get_comparable_by_ticker(
     ticker: str, repo: CompanyRepository = Depends(lambda: comparable_repo)
-):
+):  # pylint: disable=missing-function-docstring
     comparable = repo.get_comparable_by_ticker(ticker)
     if not comparable:
         raise HTTPException(status_code=404, detail="Comparable company not found")

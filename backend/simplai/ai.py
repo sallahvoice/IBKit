@@ -8,6 +8,7 @@ import os
 import google.generativeai as genai
 from dotenv import load_dotenv
 
+from backend.exceptions import GeminiError
 from backend.utils.logger import get_logger
 
 logger = get_logger(__file__)
@@ -18,6 +19,7 @@ model = genai.GenerativeModel(model_name="gemini-2.5-flash")
 
 
 def extract_info_gemini(df, user_prompt):
+    """AI model receives a df & a user prompt & answer the prompt"""
     text_csv = df.to_csv(index=False)
 
     prompt = f"""i will provide you with financial data for a certain
@@ -30,6 +32,6 @@ def extract_info_gemini(df, user_prompt):
     try:
         response = model.generate_content(prompt)
         return response.text.strip()
-    except Exception as e:
-        logger.error(f"[gemini error] {e}")
+    except GeminiError as e:
+        logger.error("[gemini error] %s", e)
         return "An error occurred while processing the data."

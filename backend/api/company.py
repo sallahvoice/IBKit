@@ -25,7 +25,9 @@ def create_company(
         company_id = repo.create_company(company.dict())
         return {"id": company_id, "message": "Company created/updated successfully"}
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(
+            status_code=400, detail=str(e)
+        )  # pylint: disable=raise-missing-from
 
 
 @router.get("/{ticker}")

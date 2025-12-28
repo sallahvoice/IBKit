@@ -1,7 +1,11 @@
+"""tests analyze_company"""
+
 from backend.services.comparables_service import analyze_company
 
 
 def analyze_apple():
+    """calls analize_company from backend/services with a ticker,
+    prints some of the result nested dict structure"""
     result = analyze_company("AAPL")
 
     if "error" in result:

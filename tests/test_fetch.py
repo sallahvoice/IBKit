@@ -10,8 +10,8 @@ from backend.ingest import fetch
 from backend.ingest.fetch import REQUIRED_STATEMENTS
 
 
-@pytest.fixture
 def sample_financial_data():
+    """fake api data, 3 required statements"""
     df_income = pd.DataFrame(
         [
             {
@@ -64,9 +64,15 @@ def sample_financial_data():
     ]
 
 
-def test_cache_and_webhook(sample_financial_data):
+@pytest.fixture
+def financial_data_factory():
+    return sample_financial_data
+
+
+def test_cache_and_webhook(financial_data_factory):
     """Test that webhook is called on cache miss but not on cache hit"""
     ticker = "TSLA"
+    cached_data = financial_data_factory()
 
     with (
         patch.object(fetch, "redis_client") as mock_redis,
@@ -109,7 +115,7 @@ def test_cache_and_webhook(sample_financial_data):
         mock_requests.reset_mock()
 
         # CACHE HIT TEST
-        mock_redis.get.return_value = json.dumps(sample_financial_data)
+        mock_redis.get.return_value = json.dumps(cached_data)
 
         dfs2 = fetch.create_financial_data([ticker])
 
@@ -119,9 +125,10 @@ def test_cache_and_webhook(sample_financial_data):
         assert not mock_redis.set.called, "Redis set should NOT be called on cache hit"
 
 
-def test_webhook_called_on_data_change(sample_financial_data):
+def test_webhook_called_on_data_change(financial_data_factory):
     """Test that webhook IS called when fetched data differs from cached data"""
     ticker = "TSLA"
+    cached_data = financial_data_factory()
 
     with (
         patch.object(fetch, "redis_client") as mock_redis,
@@ -150,7 +157,7 @@ def test_webhook_called_on_data_change(sample_financial_data):
         # First get: None (cache miss), second get: old data
         mock_redis.get.side_effect = [
             None,
-            json.dumps(sample_financial_data),
+            json.dumps(cached_data),
         ]
         mock_redis.set.return_value = True
 

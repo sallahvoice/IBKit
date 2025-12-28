@@ -1,3 +1,5 @@
+"""file used in smoothing growth & decline in financials over time"""
+
 from typing import List
 
 from backend.utils.decorators import timing

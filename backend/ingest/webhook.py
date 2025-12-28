@@ -26,13 +26,13 @@ def notify_cache_expiry(cache_key_param: str) -> bool:
 
         if resp.status_code == 200:
             logger.info(
-                f"Webhook success: {resp.json().get('message', 'Cache expired')}"
+                "Webhook success: %s", resp.json().get("message", "Cache expired")
             )
             return True
 
-        logger.error(f"Webhook failed with status {resp.status_code}")
+        logger.error("Webhook failed with status %d", resp.status_code)
         return False
 
     except (requests.RequestException, ValueError, TypeError) as e:
-        logger.warning(f"Webhook error: {e}")
+        logger.warning("Webhook error: %s", e)
         return False

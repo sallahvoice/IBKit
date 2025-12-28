@@ -1,4 +1,7 @@
-"""file that contains Company class with its attributes & dunder methodes (__repr__, __hash--) & other property function for validation ..."""
+"""
+file that contains Company class with its attributes & dunder methodes
+(__repr__, __hash--) & other property function for validation ...
+"""
 
 from typing import Dict
 

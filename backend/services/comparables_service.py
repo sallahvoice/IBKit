@@ -1,17 +1,19 @@
+"""provides clean data structure about comparable companies multiples.."""
+
 from typing import Dict
 
-from backend.domain.analysis.projections import (
-    CompanyInputsHolder,
-    EquityMultiplesEngine,
-    FirmMultiplesEngine,
-    build_projections,
-)
+from backend.domain.analysis.projections import (CompanyInputsHolder,
+                                                 EquityMultiplesEngine,
+                                                 FirmMultiplesEngine,
+                                                 build_projections)
 from backend.domain.company import Company
 from backend.domain.comparables import ComparableCompany, ComparableSet
 from backend.domain.financials.models import FinancialSnapshot
 from backend.ingest.companies_fields import create_companies_fields
-from backend.ingest.companies_snapshot_fields import create_companies_snapshot_fields
-from backend.ingest.fetch import create_financial_data, screener, target_company_filters
+from backend.ingest.companies_snapshot_fields import \
+    create_companies_snapshot_fields
+from backend.ingest.fetch import (create_financial_data, screener,
+                                  target_company_filters)
 from backend.ingest.projection_config_fields import create_projection_config
 from backend.ingest.stage_params_fields import create_params_for_companies
 from db.repositories.company_repository import CompanyRepository
@@ -198,7 +200,8 @@ def analyze_company(ticker: str) -> Dict:
         comparable_db_format = comparable.to_db_dict()
         comparables_repo.create_comparable(comp_data=comparable_db_format)
 
-    # Step 15: Return results, we might exclude it but for now multiple average methods apply lower & upper bounds for edge cases
+    # Step 15: Return results, we might exclude it but
+    # for now multiple average methods apply lower & upper bounds for edge cases
     return {
         "success": True,
         "target_ticker": ticker,

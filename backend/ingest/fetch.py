@@ -1,6 +1,4 @@
-"""
-Financial data fetching and analysis module.
-"""
+"""Financial data fetching and analysis module."""
 
 import json
 import os
@@ -20,11 +18,11 @@ try:
     from backend.utils.logger import get_logger
     from backend.utils.redis_client import redis_client
 except ImportError as e:
-    print("IMPORT ERROR IN fetch.py:", e)
+    print("IMPORT ERROR IN fetch.py: %s", e)
     raise
 
-
 load_dotenv()
+
 api_key = os.getenv("FINANCIAL-PREP-API-KEY")
 currancy_api_key = os.getenv("CURRANCY-API-KEY")
 logger = get_logger(__file__)
@@ -97,6 +95,7 @@ def compare_ticker_data(new_data: list, cached_data: list) -> bool:
 BASE_URL = "https://financialmodelingprep.com/api/v3"
 SCREENER_URL = "https://financialmodelingprep.com/stable/company-screener"
 CURRANCY_URL = "https://api.beta.fastforex.io/"
+
 REQUIRED_STATEMENTS = (
     "income-statement",
     "balance-sheet-statement",
@@ -136,7 +135,6 @@ def screener(
     """
     mc_low = 0.2 * mc
     mc_high = 5 * mc
-
     beta_low = 0.7 * beta
     beta_high = 1.5 * beta
 
@@ -156,9 +154,8 @@ def screener(
         data = response.json()
         tickers = [c.get("symbol") for c in data if c.get("symbol")]
         return tickers
-
     except requests.RequestException as e:
-        logger.error(f"Failed to fetch comparables: {e}")
+        logger.error("Failed to fetch comparables: %s", e)
         return []
 
 
@@ -185,18 +182,21 @@ def create_financial_data(
                 cached_data = redis_client.get(cache_key)
                 if cached_data:
                     cached_dict = json.loads(cached_data)
+
                     for statement_data in cached_dict:
                         cached_df = pd.DataFrame(statement_data["data"])
                         cached_df["ticker"] = ticker
                         cached_df["statement_type"] = statement_data["statement_type"]
                         dfs.append(cached_df)
+
                     if logger:
-                        logger.info(f"Using cached data for {ticker}")
+                        logger.info("Using cached data for %s", ticker)
                     cached_data_found = True
                     continue
+
             except (json.JSONDecodeError, ConnectionError) as e:  # Specific exceptions
                 if logger:
-                    logger.warning(f"Cache read failed for {cache_key}: {e}")
+                    logger.warning("Cache read failed for %s: %s", cache_key, e)
 
         # Fetch from API if not in cache
         if not cached_data_found:
@@ -210,7 +210,10 @@ def create_financial_data(
                     if response.status_code != 200:
                         if logger:
                             logger.warning(
-                                f"Failed to fetch {ticker} {statement}: {response.status_code}"
+                                "Failed to fetch %s %s: %s",
+                                ticker,
+                                statement,
+                                response.status_code,
                             )
                         continue
 
@@ -231,7 +234,6 @@ def create_financial_data(
                     ticker_data.append(
                         {"statement_type": statement, "data": df.to_dict("records")}
                     )
-
                     dfs.append(df)
 
                 except (
@@ -239,7 +241,7 @@ def create_financial_data(
                     ValueError,
                 ) as e:
                     if logger:
-                        logger.error(f"Error fetching {ticker} {statement}: {e}")
+                        logger.error("Error fetching %s %s: %s", ticker, statement, e)
                     continue
 
             # Cache all statements for this ticker with smart comparison
@@ -247,6 +249,7 @@ def create_financial_data(
                 try:
                     # Check if data actually changed before notifying webhook
                     should_notify = False
+
                     try:
                         old_cached_data = redis_client.get(cache_key)
                         if old_cached_data:
@@ -268,10 +271,11 @@ def create_financial_data(
 
                 except ConnectionError as e:
                     if logger:
-                        logger.warning(f"Cache write failed for {cache_key}: {e}")
+                        logger.warning("Cache write failed for %s: %s", cache_key, e)
 
     if dfs and logger:
-        logger.info(f"Fetched {len(dfs)} datasets")
+        logger.info("Fetched %d datasets", len(dfs))
+
     return dfs
 
 
@@ -281,7 +285,6 @@ def transpose_dataframes(dfs: List[pd.DataFrame]) -> List[pd.DataFrame]:
         return []
 
     transposed_dfs = []
-
     for df in dfs:
         if "date" in df.columns:
             try:
@@ -291,10 +294,11 @@ def transpose_dataframes(dfs: List[pd.DataFrame]) -> List[pd.DataFrame]:
                 transposed_dfs.append(str_df)
             except (ValueError, KeyError) as e:  # Specific exceptions
                 if logger:
-                    logger.warning(f"Transpose formatting failed: {e}")
+                    logger.warning("Transpose formatting failed: %s", e)
                 transposed_dfs.append(df)
         else:
             transposed_dfs.append(df)
+
     return transposed_dfs
 
 
@@ -304,7 +308,6 @@ def convert_to_millions(dfs: List[pd.DataFrame]) -> List[pd.DataFrame]:
         return []
 
     formatted_dfs = []
-
     for df in dfs:
         try:
             df_formatted = df.copy()
@@ -318,8 +321,9 @@ def convert_to_millions(dfs: List[pd.DataFrame]) -> List[pd.DataFrame]:
 
         except (ValueError, KeyError) as e:  # Specific exceptions
             if logger:
-                logger.warning(f"Error converting to millions: {e}")
+                logger.warning("Error converting to millions: %s", e)
             formatted_dfs.append(df)
+
     return formatted_dfs
 
 
@@ -347,18 +351,19 @@ def convert_to_dollars(dfs: List[pd.DataFrame]) -> List[pd.DataFrame]:
                     f"{CURRANCY_URL}/convert?from={currency}&to=USD"
                     f"&amount=1&api_key={currancy_api_key}"
                 )
-
                 response = requests.get(currancy_url, timeout=4)
                 response.raise_for_status()
                 data = response.json()
                 ratio = data.get(
                     "value"
                 )  # need to make sure api response provide "value"
+
                 if not ratio:
                     converted_dfs.append(df)
                     continue
+
             except requests.RequestException as e:
-                print(f"Currency conversion failed for {currency}: {e}")
+                print("Currency conversion failed for %s: %s", currency, e)
                 converted_dfs.append(df)
                 continue
 
@@ -370,7 +375,7 @@ def convert_to_dollars(dfs: List[pd.DataFrame]) -> List[pd.DataFrame]:
             converted_dfs.append(df_converted)
 
         except (ValueError, KeyError, TypeError) as e:
-            print(f"Failed to process dataframe: {e}")
+            print("Failed to process dataframe: %s", e)
             converted_dfs.append(df)
 
     return converted_dfs
@@ -388,15 +393,19 @@ def save_as_excel(dfs: List[pd.DataFrame]) -> Optional[BytesIO]:
         with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
             for i, df in enumerate(dfs):
                 sheet_name = f"Sheet_{i+1}"
+
                 if "ticker" in df.columns and "statement_type" in df.columns:
                     ticker = df["ticker"].iloc[0]
                     statement = df["statement_type"].iloc[0].replace("-statement", "")
                     sheet_name = f"{ticker}_{statement}"[:31]
+
                 df.to_excel(writer, index=False, sheet_name=sheet_name)
+
         return output
+
     except (ValueError, KeyError, IOError) as e:  # Specific exceptions
         if logger:
-            logger.error(f"Error saving Excel: {e}")
+            logger.error("Error saving Excel: %s", e)
         return None
 
 
@@ -417,18 +426,19 @@ def ai_analysis(
     try:
         combined_data = pd.concat(dfs, ignore_index=True) if len(dfs) > 1 else dfs[0]
         result = extract_info_gemini(combined_data, user_prompt)
+
         if logger:
             logger.info("AI analysis completed")
         return result
+
     except (ValueError, KeyError) as e:  # Specific exceptions
         if logger:
-            logger.error(f"AI analysis failed: {e}")
+            logger.error("AI analysis failed: %s", e)
         return None
 
 
 def run_financial_analysis(user_prompt: Optional[str] = None) -> Optional[dict]:
     """Run the complete financial analysis pipeline"""
-
     if not ComparableSet or not hasattr(ComparableSet, "companies"):
         if logger:
             logger.error("ComparableSet not available")
@@ -437,7 +447,7 @@ def run_financial_analysis(user_prompt: Optional[str] = None) -> Optional[dict]:
     # Get tickers
     tickers = [c.ticker for c in ComparableSet.companies]
     if logger:
-        logger.info(f"Processing {len(tickers)} tickers")
+        logger.info("Processing %d tickers", len(tickers))
 
     # Step 1: Fetch data
     dfs = create_financial_data(tickers)
@@ -466,19 +476,19 @@ def run_financial_analysis(user_prompt: Optional[str] = None) -> Optional[dict]:
     }
 
     if logger:
-        logger.info(f"Pipeline completed - {len(formatted_dfs)} datasets processed")
+        logger.info("Pipeline completed - %d datasets processed", len(formatted_dfs))
+
     return pipeline_results
 
 
 if __name__ == "__main__":
-
     main_results = run_financial_analysis(
         user_prompt="What revenue trends can you spot across these companies?"
     )
 
     if main_results and main_results["success"]:
-        print(f"✅ Success! Processed {len(main_results['data'])} datasets")
+        print("✅ Success! Processed %d datasets", len(main_results["data"]))
         if main_results["ai_analysis"]:
-            print(f"AI Analysis: {main_results['ai_analysis'][:200]}...")
+            print("AI Analysis: %s...", main_results["ai_analysis"][:200])
     else:
         print("❌ Pipeline failed")

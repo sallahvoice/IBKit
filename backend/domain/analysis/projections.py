@@ -1,17 +1,19 @@
-"""a file that uses multiple classes from other files & calculates multiple stats about a firm"""
+"""
+a file that uses multiple classes from other files &
+calculates multiple stats about a firm
+"""
 
 from dataclasses import asdict, dataclass, replace
 from typing import TYPE_CHECKING, List, Union
 
-if TYPE_CHECKING:
-    from backend.domain.financials.models import FinancialSnapshot, TwoStageGrowthParams
-
 from backend.domain.company import Company
-from backend.utils.converge import (
-    converge_growth,
-    project_other_line_items,
-    project_revenue,
-)
+from backend.utils.converge import (converge_growth, project_other_line_items,
+                                    project_revenue)
+
+if TYPE_CHECKING:
+    from backend.domain.financials.models import (FinancialSnapshot,
+                                                  TwoStageGrowthParams)
+
 
 Percent = float
 Money = Union[float, int]
@@ -168,7 +170,7 @@ class CompanyInputsHolder:
         assumptions: "ProjectionConfig",
         params: "TwoStageGrowthParams",
         projected: "ProjectionResult",
-    ) -> "CompanyInputsHolder":
+    ) -> "CompanyInputsHolder":  # pylint: disable=missing-function-docstring
 
         # Pre-calculate growth rates
         first_stage_growth = params.growth_rate(snapshot, params.growth)
@@ -243,25 +245,33 @@ class EquityMultiplesEngine:
     """
 
     @staticmethod
-    def growth_expected_roe(params: CompanyInputsHolder) -> Percent:
+    def growth_expected_roe(
+        params: CompanyInputsHolder,
+    ) -> Percent:  # pylint: disable=missing-function-docstring
         return params.growth_stage_profit_margin / (
             1 - params.growth_stage_fcfe_percent_rev
         )
 
     @staticmethod
-    def stable_expected_roe(params: CompanyInputsHolder) -> Percent:
+    def stable_expected_roe(
+        params: CompanyInputsHolder,
+    ) -> Percent:  # pylint: disable=missing-function-docstring
         return params.stable_stage_profit_margin / (
             1 - params.stable_stage_fcfe_percent_rev
         )
 
     @staticmethod
-    def book_value_of_equity(params: CompanyInputsHolder) -> Money:  # per share
+    def book_value_of_equity(
+        params: CompanyInputsHolder,
+    ) -> Money:  # pylint: disable=missing-function-docstring
         return (
             params.expected_next_year_net_income_per_share / params.first_stage_growth
         )
 
     @staticmethod
-    def expected_revenues_next_year(params: CompanyInputsHolder) -> Money:
+    def expected_revenues_next_year(
+        params: CompanyInputsHolder,
+    ) -> Money:  # pylint: disable=missing-function-docstring
         return (
             params.expected_next_year_net_income_per_share
             / params.growth_stage_profit_margin
@@ -314,7 +324,7 @@ class EquityMultiplesEngine:
     @staticmethod
     def price_to_book(
         params: CompanyInputsHolder, info: TwoStageGrowthParams
-    ) -> Multiple:
+    ) -> Multiple:  # pylint: disable=missing-function-docstring
         _value_of_equity = EquityMultiplesEngine.value_of_equity(params, info)
         _book_value = EquityMultiplesEngine.book_value_of_equity(params)
         return _value_of_equity / _book_value
@@ -322,7 +332,7 @@ class EquityMultiplesEngine:
     @staticmethod
     def forward_price_to_sales(
         params: CompanyInputsHolder, info: TwoStageGrowthParams
-    ) -> Multiple:
+    ) -> Multiple:  # pylint: disable=missing-function-docstring
         forward_pe_ratio = EquityMultiplesEngine.forward_pe(params, info)
         expected_rev_next_year = EquityMultiplesEngine.expected_revenues_next_year(
             params
@@ -339,11 +349,15 @@ class FirmMultiplesEngine:
     """
 
     @staticmethod
-    def growth_roic(params: CompanyInputsHolder) -> Percent:
+    def growth_roic(
+        params: CompanyInputsHolder,
+    ) -> Percent:  # pylint: disable=missing-function-docstring
         return params.first_stage_growth / params.growth_stage_reinvestment_rate
 
     @staticmethod
-    def stable_roic(params: CompanyInputsHolder) -> Percent:
+    def stable_roic(
+        params: CompanyInputsHolder,
+    ) -> Percent:  # pylint: disable=missing-function-docstring
         return params.second_stage_growth / params.stable_stage_reinvestment_rate
 
     @staticmethod
@@ -384,7 +398,7 @@ class FirmMultiplesEngine:
     @staticmethod
     def forward_ev_over_ebit(
         snapshot: FinancialSnapshot, params: CompanyInputsHolder
-    ) -> Multiple:
+    ) -> Multiple:  # pylint: disable=missing-function-docstring
         _enterprise_value = FirmMultiplesEngine.enterprise_value(params)
         _ebit_before_tax = params.expected_next_year_after_tax_ebit_per_share / (
             1 - snapshot.marginal_tax_rate
@@ -394,14 +408,16 @@ class FirmMultiplesEngine:
     @staticmethod
     def trailing_ev_over_ebit(
         snapshot: FinancialSnapshot, params: CompanyInputsHolder
-    ) -> Multiple:
+    ) -> Multiple:  # pylint: disable=missing-function-docstring
         _forward = FirmMultiplesEngine.forward_ev_over_ebit(snapshot, params)
         return _forward * (1 + params.first_stage_growth)
 
     # ---------------- EV/Sales ----------------
 
     @staticmethod
-    def forward_ev_over_sales(params: CompanyInputsHolder) -> Multiple:
+    def forward_ev_over_sales(
+        params: CompanyInputsHolder,
+    ) -> Multiple:  # pylint: disable=missing-function-docstring
         _enterprise_value = FirmMultiplesEngine.enterprise_value(params)
         _expected_revenues_next_year = (
             params.expected_next_year_after_tax_ebit_per_share
@@ -410,6 +426,8 @@ class FirmMultiplesEngine:
         return _enterprise_value / _expected_revenues_next_year
 
     @staticmethod
-    def trailing_ev_over_sales(params: CompanyInputsHolder) -> Multiple:
+    def trailing_ev_over_sales(
+        params: CompanyInputsHolder,
+    ) -> Multiple:  # pylint: disable=missing-function-docstring
         _forward = FirmMultiplesEngine.forward_ev_over_sales(params)
         return _forward / (1 + params.first_stage_growth)

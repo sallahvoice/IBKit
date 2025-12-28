@@ -1,3 +1,5 @@
+"""repo dedicated to financial snapshots in the database"""
+
 from datetime import date
 from typing import Dict, Optional
 
@@ -6,6 +8,7 @@ from db.repositories.base_repository import BaseRepository
 
 
 class SnapshotRepository(BaseRepository):
+    """class that manages financial snapshots of firms"""
 
     def __init__(self):
         super().__init__("financial_snapshots")

@@ -4,6 +4,7 @@ from typing import Any, Dict
 import numpy as np
 import plotly.graph_objects as go
 import statsmodels.api as sm
+import yfinance as yf
 
 
 def firms_multiples_graph(compSet: ComparableSet):
@@ -105,7 +106,7 @@ def target_company_beta_regression(
                 for d, s, m in zip(weekly_returns.index, y, x)
             ],
             hoverinfo="text",
-            marker=dict(color="#2E86C1"),
+            marker={"color": "#2E86C1"},
         )
     )
 
@@ -115,7 +116,7 @@ def target_company_beta_regression(
             y=y_pred,
             mode="lines",
             name=f"Fit: y = {alpha:.3f} + {beta:.3f}x",
-            line=dict(color="red"),
+            line={"color": "red"},
         )
     )
 

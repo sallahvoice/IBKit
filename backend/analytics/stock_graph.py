@@ -5,7 +5,7 @@ dedicated to the user target company (the company being analyzed).
 
 try:
     import datetime as dt
-    from typing import Dict, Union
+    from typing import Dict
 
     import matplotlib.pyplot as plt
     import plotly.graph_objects as go

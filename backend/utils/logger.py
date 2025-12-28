@@ -1,11 +1,11 @@
-import logging
-from logging.handlers import RotatingFileHandler
-from pathlib import Path
-
 """
 This module sets up a logger that writes logs to both a rotating file and the console.
 The log file is created in the parent directory of this script as 'log.log'.
 """
+
+import logging
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 log_path = Path(__file__).parent.parent / "log.log"
 log_path.parent.mkdir(parents=True, exist_ok=True)  # Ensure log directory exists

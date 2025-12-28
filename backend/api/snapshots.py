@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from db.repositories.snpashot_repository import SnapshotRepository
+from db.repositories.snapshot_repository import SnapshotRepository
 
 snapshot_repo = SnapshotRepository()
 
@@ -40,7 +40,7 @@ router.post("/")
 
 def read_snapshot(
     snapshot: SnapshotCreate, repo: SnapshotRepository = Depends(lambda: snapshot_repo)
-):
+):  # pylint: disable=missing-function-docstring
     snapshot_id = repo.create_snapshot(snapshot)
     try:
         return {"id": snapshot_id, "message": "Snapshot added successfully"}
@@ -51,7 +51,7 @@ def read_snapshot(
 @router.get("/{company_id}")
 def get_latest_snapshot(
     company_id: int, repo: SnapshotRepository = Depends(lambda: snapshot_repo)
-):
+):  # pylint: disable=missing-function-docstring
     snapshot = repo.get_latest_snapshot(company_id)
     if not snapshot:
         raise HTTPException(status_code=404, detail="Snapshot not found")
@@ -63,7 +63,7 @@ def get_snapshot_by_date(
     company_id: str,
     snapshot_date: str,
     repo: SnapshotRepository = Depends(lambda: snapshot_repo),
-):
+):  # pylint: disable=missing-function-docstring
     snapshot = repo.get_snapshot_by_date(company_id, snapshot_date)
     if not snapshot:
         raise HTTPException(status_code=404, detail="snapshot not found for this date")

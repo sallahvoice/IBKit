@@ -1,3 +1,4 @@
+# pylint: disable=missing-function-docstring
 """repository file that defines a base class with crud methods
 that is inherited in other files classes"""
 
@@ -22,7 +23,7 @@ class BaseRepository:
             cursor.execute(query, tuple(data.values()))
             return cursor.lastrowid
 
-    def find_by_id(self, id):
+    def find_by_id(self, id):  # pylint: disable=redefined-builtin
         query = f"SELECT * FROM {self.table} WHERE id = %s"
 
         with database.get_cursor() as cursor:
@@ -36,7 +37,7 @@ class BaseRepository:
             cursor.execute(query, (limit,))
             return cursor.fetchall()
 
-    def update(self, id, data):
+    def update(self, id, data):  # pylint: disable=redefined-builtin
         set_clause = ", ".join(f"{k} = %s" for k in data)
         query = f"UPDATE {self.table} SET {set_clause} WHERE id = %s"
 
@@ -44,7 +45,7 @@ class BaseRepository:
             cursor.execute(query, tuple(data.values()) + (id,))
             return cursor.rowcount > 0
 
-    def delete_by_id(self, id):
+    def delete_by_id(self, id):  # pylint: disable=redefined-builtin
         query = f"DELETE FROM {self.table} WHERE id = %s"
 
         with database.get_cursor() as cursor:

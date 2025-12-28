@@ -1,21 +1,26 @@
-"""this file organizes firms data (ebit, sales...), some data is only for the target company we are analyzing"""
+"""
+this file organizes firms data (ebit, sales...),
+some data is only for the target company we are analyzing
+"""
 
 from typing import TYPE_CHECKING, List
 
 import pandas as pd
+import yfinance as yf
 
+from backend.exceptions import DataFetchError
 from backend.utils.logger import get_logger
 
 if TYPE_CHECKING:
     from pandas import DataFrame
 
-import yfinance as yf
 
 logger = get_logger(__file__)
 
 
 def create_companies_snapshot_fields(dfs: List[pd.DataFrame]):  # needs revision
-    """funcyion that handles target company ticker, its data, handles data per statement type & ticker.."""
+    """funcyion that handles target company ticker, its data,
+    handles data per statement type & ticker.."""
     snapshots = {}
     target_company_ticker = dfs[0]["ticker"].iloc[0]
 
@@ -37,8 +42,8 @@ def create_companies_snapshot_fields(dfs: List[pd.DataFrame]):  # needs revision
                         quartrly_inc.loc[key].iloc[:4].sum()
                     )
                     break
-    except Exception as e:
-        logger.error(f"Error fetching financials for {target_company_ticker}: {e}")
+    except DataFetchError:
+        logger.error("Error fetching financials for %s", target_company_ticker)
 
     if (
         snapshots[ticker]["trailing_sales"] or snapshots[ticker]["trailing_ebit"]

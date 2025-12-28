@@ -1,3 +1,5 @@
+"""repo for comparable comps multiples (stored after computation)"""
+
 from typing import Dict, List, Optional
 
 from db.database import database
@@ -5,7 +7,7 @@ from db.repositories.base_repository import BaseRepository
 
 
 class ComparableRepository(BaseRepository):
-    """Repository for managing comparable companies multiples."""
+    """class for managing comparable companies multiples."""
 
     def __init__(self):
         super().__init__("comparable_companies")

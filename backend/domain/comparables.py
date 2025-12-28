@@ -1,4 +1,8 @@
-"""a file with a class that represents a single comparable company & its multiples & a bunch of functions utilized in other files (as_dict, from_db_record)..."""
+"""
+a file with a class that represents a single comparable company &
+its multiples & a bunch of functions utilized in other
+files (as_dict, from_db_record)...
+"""
 
 from dataclasses import asdict, dataclass, fields
 from statistics import mean, median
