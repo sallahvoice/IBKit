@@ -24,7 +24,7 @@ except ImportError as e:
 load_dotenv()
 
 api_key = os.getenv("FINANCIAL-PREP-API-KEY")
-currancy_api_key = os.getenv("CURRANCY-API-KEY")
+currancy_api_key = os.getenv("CURRENCY_API_KEY") or os.getenv("CURRENCY-API-KEY") or os.getenv("CURRANCY-API-KEY")
 logger = get_logger(__file__)
 
 
@@ -104,7 +104,9 @@ REQUIRED_STATEMENTS = (
 
 
 @retry()
-def target_company_filters(target_company_ticker: str) -> Tuple[float, float]:
+def target_company_filters(
+    target_company_ticker: str,
+) -> Optional[Tuple[float, float]]:
     """
     Get market cap and beta for the target company from Yahoo Finance.
     Returns a tuple (market_cap, beta).
@@ -363,19 +365,20 @@ def convert_to_dollars(dfs: List[pd.DataFrame]) -> List[pd.DataFrame]:
                     continue
 
             except requests.RequestException as e:
-                print("Currency conversion failed for %s: %s", currency, e)
+                if logger:
+                    logger.warning("Currency conversion failed for %s: %s", currency, e)
                 converted_dfs.append(df)
                 continue
 
             for col in numeric_columns:
-                mask = df_converted[col].abs() >= 1_000_000
-                df_converted.loc[mask, col] = df_converted.loc[mask, col] / ratio
+                df_converted[col] = df_converted[col] * ratio
 
             df_converted.attrs["currency"] = "USD"
             converted_dfs.append(df_converted)
 
         except (ValueError, KeyError, TypeError) as e:
-            print("Failed to process dataframe: %s", e)
+            if logger:
+                logger.warning("Failed to process dataframe: %s", e)
             converted_dfs.append(df)
 
     return converted_dfs
@@ -487,8 +490,8 @@ if __name__ == "__main__":
     )
 
     if main_results and main_results["success"]:
-        print("✅ Success! Processed %d datasets", len(main_results["data"]))
+        print(f"✅ Success! Processed {len(main_results['data'])} datasets")
         if main_results["ai_analysis"]:
-            print("AI Analysis: %s...", main_results["ai_analysis"][:200])
+            print(f"AI Analysis: {main_results['ai_analysis'][:200]}...")
     else:
         print("❌ Pipeline failed")
