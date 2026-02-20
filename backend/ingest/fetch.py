@@ -10,16 +10,12 @@ import requests
 import yfinance as yf
 from dotenv import load_dotenv
 
-try:
-    from backend.domain.comparables import ComparableSet
-    from backend.ingest.webhook import notify_cache_expiry
-    from backend.simplai.ai import extract_info_gemini
-    from backend.utils.decorators import retry
-    from backend.utils.logger import get_logger
-    from backend.utils.redis_client import redis_client
-except ImportError as e:
-    print("IMPORT ERROR IN fetch.py: %s", e)
-    raise
+from backend.domain.comparables import ComparableSet
+from backend.ingest.webhook import notify_cache_expiry
+from backend.simplai.ai import extract_info_gemini
+from backend.utils.decorators import retry
+from backend.utils.logger import get_logger
+from backend.utils.redis_client import redis_client
 
 load_dotenv()
 
@@ -363,19 +359,20 @@ def convert_to_dollars(dfs: List[pd.DataFrame]) -> List[pd.DataFrame]:
                     continue
 
             except requests.RequestException as e:
-                print("Currency conversion failed for %s: %s", currency, e)
+                if logger:
+                    logger.warning("Currency conversion failed for %s: %s", currency, e)
                 converted_dfs.append(df)
                 continue
 
             for col in numeric_columns:
-                mask = df_converted[col].abs() >= 1_000_000
-                df_converted.loc[mask, col] = df_converted.loc[mask, col] / ratio
+                df_converted[col] = df_converted[col] / ratio
 
             df_converted.attrs["currency"] = "USD"
             converted_dfs.append(df_converted)
 
         except (ValueError, KeyError, TypeError) as e:
-            print("Failed to process dataframe: %s", e)
+            if logger:
+                logger.warning("Failed to process dataframe: %s", e)
             converted_dfs.append(df)
 
     return converted_dfs
@@ -487,8 +484,8 @@ if __name__ == "__main__":
     )
 
     if main_results and main_results["success"]:
-        print("✅ Success! Processed %d datasets", len(main_results["data"]))
+        print(f"✅ Success! Processed {len(main_results['data'])} datasets")
         if main_results["ai_analysis"]:
-            print("AI Analysis: %s...", main_results["ai_analysis"][:200])
+            print(f"AI Analysis: {main_results['ai_analysis'][:200]}...")
     else:
         print("❌ Pipeline failed")
