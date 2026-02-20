@@ -247,3 +247,33 @@ def test_no_webhook_when_data_unchanged():
         assert (
             not mock_webhook.called
         ), "Webhook should NOT be called when data unchanged"
+
+
+def test_convert_to_dollars_converts_all_numeric_columns():
+    """Non-USD numeric values should be converted to USD using the API ratio."""
+    df = pd.DataFrame([{"revenue": 10.0, "expense": 2.5, "name": "A"}])
+    df.attrs["currency"] = "EUR"
+
+    with patch.object(fetch, "requests") as mock_requests:
+        mock_response = MagicMock()
+        mock_response.json.return_value = {"value": 1.2}
+        mock_response.raise_for_status.return_value = None
+        mock_requests.get.return_value = mock_response
+
+        converted = fetch.convert_to_dollars([df])
+
+    assert converted[0].attrs["currency"] == "USD"
+    assert converted[0]["revenue"].iloc[0] == pytest.approx(12.0)
+    assert converted[0]["expense"].iloc[0] == pytest.approx(3.0)
+
+
+def test_convert_to_dollars_skips_usd_data():
+    """USD data should return unchanged and should not call conversion API."""
+    df = pd.DataFrame([{"revenue": 10.0}])
+    df.attrs["currency"] = "USD"
+
+    with patch.object(fetch, "requests") as mock_requests:
+        converted = fetch.convert_to_dollars([df])
+
+    mock_requests.get.assert_not_called()
+    assert converted[0].equals(df)
