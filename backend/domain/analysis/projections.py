@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 a file that uses multiple classes from other files &
 calculates multiple stats about a firm
