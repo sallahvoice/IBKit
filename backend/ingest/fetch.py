@@ -18,13 +18,13 @@ try:
     from backend.utils.logger import get_logger
     from backend.utils.redis_client import redis_client
 except ImportError as e:
-    print("IMPORT ERROR IN fetch.py: %s", e)
+    print(f"IMPORT ERROR IN fetch.py: {e}")
     raise
 
 load_dotenv()
 
 api_key = os.getenv("FINANCIAL-PREP-API-KEY")
-currancy_api_key = os.getenv("CURRANCY-API-KEY")
+currency_api_key = os.getenv("CURRANCY-API-KEY")
 logger = get_logger(__file__)
 
 
@@ -94,7 +94,7 @@ def compare_ticker_data(new_data: list, cached_data: list) -> bool:
 
 BASE_URL = "https://financialmodelingprep.com/api/v3"
 SCREENER_URL = "https://financialmodelingprep.com/stable/company-screener"
-CURRANCY_URL = "https://api.beta.fastforex.io/"
+CURRENCY_URL = "https://api.beta.fastforex.io/"
 
 REQUIRED_STATEMENTS = (
     "income-statement",
@@ -348,8 +348,8 @@ def convert_to_dollars(dfs: List[pd.DataFrame]) -> List[pd.DataFrame]:
             # fetch conversion ratio
             try:
                 currancy_url = (
-                    f"{CURRANCY_URL}/convert?from={currency}&to=USD"
-                    f"&amount=1&api_key={currancy_api_key}"
+                    f"{CURRENCY_URL}/convert?from={currency}&to=USD"
+                    f"&amount=1&api_key={currency_api_key}"
                 )
                 response = requests.get(currancy_url, timeout=4)
                 response.raise_for_status()
